@@ -1,303 +1,166 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { SkyDome } from "@/components/SkyDome";
-import { ElevationChart } from "@/components/ElevationChart";
-import { TimelineStrip } from "@/components/TimelineStrip";
+import heroImage from "@/assets/lunar-south-pole.jpg";
 import { SITES } from "@/lib/sites";
-import {
-  formatDate,
-  formatDuration,
-  formatUTC,
-  sampleSite,
-  type SiteAnalysis,
-} from "@/lib/analysis";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CLPS Lunar Mission Browser — Folsom Space" },
+      { title: "Lunar South Pole Analysis — Landing Site Illumination & Comms" },
       {
         name: "description",
         content:
-          "Compare lunar south pole landing sites and dates. Visualize Sun and Earth positions relative to the local horizon to assess solar power and direct-to-Earth communication windows.",
+          "Compare candidate lunar south pole landing sites by solar uptime, longest dark period and direct-to-Earth link availability, modelled across a full lunation.",
       },
-      { property: "og:title", content: "CLPS Lunar Mission Browser — Folsom Space" },
+      {
+        property: "og:title",
+        content: "Lunar South Pole Analysis — Landing Site Illumination & Comms",
+      },
       {
         property: "og:description",
         content:
-          "Sun and Earth horizon geometry for candidate lunar south pole landing sites, with illumination and direct-to-Earth link windows.",
+          "Solar uptime, shadow episodes and Earth link windows for eight candidate south-polar landing sites.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Browser,
+  component: LandingPage,
 });
 
-const STEPS = 720;
-const DURATIONS = [
-  { label: "7 d", days: 7 },
-  { label: "14 d", days: 14 },
-  { label: "1 lunation", days: 29.53 },
-  { label: "60 d", days: 60 },
+const HIGHLIGHTS = [
+  {
+    k: "Sites modelled",
+    v: String(SITES.length),
+    d: "Candidate CLPS and Artemis-class regions within 6° of the pole.",
+  },
+  {
+    k: "Time resolution",
+    v: "720 steps",
+    d: "A full lunation sampled at roughly one-hour cadence, scrubbable.",
+  },
+  {
+    k: "Horizon sectors",
+    v: "12",
+    d: "Terrain masks applied per azimuth sector for rise and set tests.",
+  },
 ];
 
-function Browser() {
-  const [primaryId, setPrimaryId] = useState(SITES[0]!.id);
-  const [compareId, setCompareId] = useState<string | null>(SITES[2]!.id);
-  const [startDate, setStartDate] = useState("2026-03-01");
-  const [days, setDays] = useState(29.53);
-  const [index, setIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
+const FEATURES = [
+  {
+    title: "Sky dome",
+    body: "Sun and Earth tracks projected onto the local sky with the terrain silhouette drawn in, so shadow episodes are visible at a glance.",
+  },
+  {
+    title: "Elevation profile",
+    body: "Altitude of both bodies against the horizon mask through the selected span, with the scrub cursor tied to every other view.",
+  },
+  {
+    title: "Window timeline",
+    body: "Sunlit and Earth-visible intervals as banded strips, ready for comparing two sites side by side.",
+  },
+];
 
-  const startMs = useMemo(() => Date.parse(`${startDate}T00:00:00Z`), [startDate]);
-
-  const primary = useMemo(
-    () => sampleSite(SITES.find((s) => s.id === primaryId)!, startMs, days, STEPS),
-    [primaryId, startMs, days],
-  );
-  const compare = useMemo(
-    () =>
-      compareId
-        ? sampleSite(SITES.find((s) => s.id === compareId)!, startMs, days, STEPS)
-        : null,
-    [compareId, startMs, days],
-  );
-
-  useEffect(() => {
-    if (!playing) return;
-    const id = window.setInterval(
-      () => setIndex((i) => (i >= STEPS ? 0 : i + 1)),
-      40,
-    );
-    return () => window.clearInterval(id);
-  }, [playing]);
-
-  const cursorT = primary.samples[index]?.t ?? startMs;
-
+function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-border px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="grid size-6 place-items-center rounded-full border border-sun/50">
-            <span className="size-2 rounded-full bg-sun" />
-          </span>
-          <div className="leading-tight">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em]">Folsom Space</p>
-            <p className="text-[11px] text-muted-foreground">CLPS Lunar Mission Browser</p>
-          </div>
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-4 font-mono text-[11px]">
-          <label className="flex items-center gap-2">
-            <span className="uppercase tracking-[0.15em] text-muted-foreground">Start</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-border bg-card px-2 py-1 text-foreground outline-none focus:border-sun"
-            />
-          </label>
-          <div className="flex items-center gap-1">
-            <span className="uppercase tracking-[0.15em] text-muted-foreground">Span</span>
-            {DURATIONS.map((d) => (
-              <button
-                key={d.label}
-                onClick={() => setDays(d.days)}
-                className={`border px-2 py-1 transition-colors ${
-                  days === d.days
-                    ? "border-sun bg-sun/15 text-sun"
-                    : "border-border text-muted-foreground hover:text-foreground"
-                }`}
+    <main>
+      <section className="relative overflow-hidden border-b border-hairline">
+        <img
+          src={heroImage}
+          alt="Lunar south pole terrain under low grazing sunlight"
+          className="absolute inset-0 size-full object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-24 md:px-6 md:py-32">
+          <div className="max-w-2xl">
+            <p className="label-caps text-primary">Mission planning console</p>
+            <h1 className="mt-4 text-4xl font-extrabold leading-[1.05] md:text-6xl">
+              Where the sun stays up and{" "}
+              <span className="text-accent">Earth stays in view</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
+              An interactive model of Sun and Earth geometry at the lunar south
+              pole. Pick a landing site and a date, scrub a lunation, and read
+              off solar uptime, shadow episodes and direct-to-Earth link windows.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/models"
+                className="glow-primary rounded-md bg-primary px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
               >
-                {d.label}
-              </button>
+                Open the model
+              </Link>
+              <Link
+                to="/methods"
+                className="rounded-md border border-input px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-foreground transition-colors hover:bg-secondary"
+              >
+                Data &amp; methods
+              </Link>
+            </div>
+          </div>
+
+          <dl className="grid gap-px overflow-hidden rounded-lg border border-hairline bg-hairline sm:grid-cols-3">
+            {HIGHLIGHTS.map((h) => (
+              <div key={h.k} className="glass-panel border-0 p-5">
+                <dt className="label-caps text-muted-foreground">{h.k}</dt>
+                <dd className="mt-2 font-mono text-3xl font-semibold text-foreground">
+                  {h.v}
+                </dd>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {h.d}
+                </p>
+              </div>
             ))}
-          </div>
-          <span className="text-muted-foreground">
-            {formatUTC(cursorT)} <span className="text-foreground/60">UTC</span>
-          </span>
+          </dl>
         </div>
-      </header>
+      </section>
 
-      <div className="flex flex-col lg:flex-row">
-        <aside className="w-full shrink-0 border-b border-border lg:w-72 lg:border-b-0 lg:border-r">
-          <div className="border-b border-border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Candidate sites · south pole
+      <section className="grid-texture mx-auto max-w-6xl px-4 py-20 md:px-6">
+        <h2 className="text-2xl font-bold md:text-3xl">What the model shows</h2>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {FEATURES.map((f) => (
+            <article
+              key={f.title}
+              className="glass-panel rounded-lg p-6 transition-colors hover:border-primary/40"
+            >
+              <h3 className="text-lg font-semibold">{f.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {f.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t border-hairline">
+        <div className="mx-auto max-w-6xl px-4 py-20 md:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-2xl font-bold md:text-3xl">Candidate sites</h2>
+            <Link
+              to="/models"
+              className="font-mono text-xs uppercase tracking-widest text-primary hover:text-accent"
+            >
+              Compare all →
+            </Link>
           </div>
-          <ul>
-            {SITES.map((site) => {
-              const isPrimary = site.id === primaryId;
-              const isCompare = site.id === compareId;
-              return (
-                <li key={site.id} className="border-b border-border/60">
-                  <button
-                    onClick={() => {
-                      if (isPrimary) return;
-                      if (compareId === site.id) setCompareId(primaryId);
-                      setPrimaryId(site.id);
-                    }}
-                    className={`w-full px-3 py-2 text-left transition-colors ${
-                      isPrimary
-                        ? "bg-sun/10 border-l-2 border-l-sun"
-                        : isCompare
-                          ? "bg-earth/10 border-l-2 border-l-earth"
-                          : "border-l-2 border-l-transparent hover:bg-secondary"
-                    }`}
-                  >
-                    <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-[13px] font-medium">{site.name}</span>
-                      <span className="font-mono text-[10px] text-muted-foreground">
-                        {isPrimary ? "A" : isCompare ? "B" : ""}
-                      </span>
-                    </div>
-                    <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-                      {Math.abs(site.lat).toFixed(2)}°S ·{" "}
-                      {Math.abs(site.lon).toFixed(2)}°{site.lon < 0 ? "W" : "E"} ·{" "}
-                      {site.elevation.toLocaleString()} m
-                    </div>
-                  </button>
-                  {!isPrimary && (
-                    <button
-                      onClick={() => setCompareId(isCompare ? null : site.id)}
-                      className="w-full px-3 pb-2 text-left font-mono text-[10px] text-muted-foreground hover:text-earth"
-                    >
-                      {isCompare ? "− remove from compare" : "+ compare"}
-                    </button>
-                  )}
-                </li>
-              );
-            })}
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {SITES.map((s) => (
+              <li
+                key={s.id}
+                className="glass-panel rounded-lg p-4 transition-colors hover:border-primary/40"
+              >
+                <p className="label-caps text-primary">{s.region}</p>
+                <p className="mt-2 text-sm font-semibold leading-snug">{s.name}</p>
+                <p className="mt-2 font-mono text-[11px] text-muted-foreground">
+                  {Math.abs(s.lat).toFixed(2)}°S ·{" "}
+                  {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? "W" : "E"} ·{" "}
+                  {s.elevation.toLocaleString()} m
+                </p>
+              </li>
+            ))}
           </ul>
-          <p className="px-3 py-3 text-[11px] leading-relaxed text-muted-foreground">
-            Geometry from truncated JPL-style lunar and solar series with optical
-            libration. Terrain horizon profiles are illustrative — planning-grade,
-            not navigation-grade.
-          </p>
-        </aside>
-
-        <main className="min-w-0 flex-1 p-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-            <section className="flex flex-col gap-4">
-              <div className={`grid gap-4 ${compare ? "md:grid-cols-2" : ""}`}>
-                <div className="border border-border bg-card p-3">
-                  <SkyDome analysis={primary} index={index} />
-                </div>
-                {compare && (
-                  <div className="border border-border bg-card p-3">
-                    <SkyDome analysis={compare} index={index} />
-                  </div>
-                )}
-              </div>
-
-              <div className="border border-border bg-card p-3">
-                <div className="mb-2 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  <span>Elevation above horizon · {primary.site.name}</span>
-                  <span className="normal-case tracking-normal">
-                    <span className="text-sun">sun</span> ·{" "}
-                    <span className="text-earth">earth</span> ·{" "}
-                    <span className="text-terrain-edge">terrain</span>
-                  </span>
-                </div>
-                <ElevationChart analysis={primary} index={index} />
-              </div>
-
-              <div className="flex flex-col gap-4 border border-border bg-card p-3">
-                <TimelineStrip
-                  analysis={primary}
-                  index={index}
-                  onScrub={setIndex}
-                  label={`A · ${primary.site.name}`}
-                />
-                {compare && (
-                  <TimelineStrip
-                    analysis={compare}
-                    index={index}
-                    onScrub={setIndex}
-                    label={`B · ${compare.site.name}`}
-                  />
-                )}
-                <div className="flex items-center gap-3 border-t border-border pt-3">
-                  <button
-                    onClick={() => setPlaying((p) => !p)}
-                    className="border border-sun bg-sun/15 px-3 py-1 font-mono text-[11px] text-sun"
-                  >
-                    {playing ? "PAUSE" : "PLAY"}
-                  </button>
-                  <input
-                    type="range"
-                    min={0}
-                    max={STEPS}
-                    value={index}
-                    onChange={(e) => setIndex(Number(e.target.value))}
-                    className="h-1 flex-1 accent-sun"
-                    aria-label="Scrub time"
-                  />
-                  <span className="font-mono text-[11px] text-muted-foreground">
-                    {formatDate(startMs)} → {formatDate(startMs + days * 86400000)}
-                  </span>
-                </div>
-              </div>
-            </section>
-
-            <aside className="flex flex-col gap-4">
-              <StatsPanel analysis={primary} tag="A" />
-              {compare && <StatsPanel analysis={compare} tag="B" />}
-            </aside>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function StatsPanel({ analysis, tag }: { analysis: SiteAnalysis; tag: string }) {
-  const rows: Array<[string, string, string?]> = [
-    ["Solar uptime", `${(analysis.illumination * 100).toFixed(1)}%`, "text-sun"],
-    ["Earth in view", `${(analysis.earthVisibility * 100).toFixed(1)}%`, "text-earth"],
-    ["Longest dark", formatDuration(analysis.longestDarkHours)],
-    ["Longest comms gap", formatDuration(analysis.longestGapHours)],
-    ["Peak sun elevation", `${analysis.maxSunAlt.toFixed(2)}°`],
-    ["Mean earth elevation", `${analysis.meanEarthAlt.toFixed(2)}°`],
-    ["Sunlit episodes", String(analysis.sunlitIntervals.length)],
-  ];
-
-  return (
-    <div className="border border-border bg-card p-3">
-      <div className="mb-2 flex items-baseline justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          {tag} · assessment
-        </span>
-        <span className="text-[12px] font-medium">{analysis.site.name}</span>
-      </div>
-      <div className="mb-3">
-        <div className="h-1.5 w-full bg-shadow">
-          <div
-            className="h-full bg-sun"
-            style={{ width: `${analysis.illumination * 100}%` }}
-          />
         </div>
-        <div className="mt-1 h-1.5 w-full bg-shadow">
-          <div
-            className="h-full bg-earth"
-            style={{ width: `${analysis.earthVisibility * 100}%` }}
-          />
-        </div>
-      </div>
-      <dl className="flex flex-col">
-        {rows.map(([k, v, cls]) => (
-          <div
-            key={k}
-            className="flex items-baseline justify-between border-t border-border/60 py-1.5"
-          >
-            <dt className="text-[12px] text-muted-foreground">{k}</dt>
-            <dd className={`font-mono text-[12px] ${cls ?? "text-foreground"}`}>{v}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-        {analysis.site.notes}
-      </p>
-    </div>
+      </section>
+    </main>
   );
 }
