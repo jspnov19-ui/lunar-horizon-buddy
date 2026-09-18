@@ -2,9 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 const LINKS = [
-  { to: "/", label: "Landing" },
+  { to: "/", label: "Home" },
+  { to: "/planner", label: "Planner" },
+  { to: "/how-it-works", label: "How it works" },
   { to: "/models", label: "Models" },
-  { to: "/methods", label: "Data & Methods" },
+  { to: "/methods", label: "Methods" },
 ] as const;
 
 function useUtcClock() {
