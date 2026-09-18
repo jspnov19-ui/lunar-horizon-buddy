@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { NavBar } from "../components/NavBar";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -132,8 +133,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <NavBar />
+        <div className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </div>
+        <footer className="border-t border-hairline px-4 py-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground md:px-6">
+          Planning-grade geometry · not for navigation · Lunar South Pole Analysis
+        </footer>
+      </div>
     </QueryClientProvider>
   );
 }
