@@ -77,11 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Lunar South Pole Analysis" },
+      {
+        name: "description",
+        content:
+          "Illumination and direct-to-Earth link analysis for candidate lunar south pole landing sites.",
+      },
+      { property: "og:title", content: "Lunar South Pole Analysis" },
+      {
+        property: "og:description",
+        content:
+          "Illumination and direct-to-Earth link analysis for candidate lunar south pole landing sites.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
