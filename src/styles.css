@@ -1,0 +1,189 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system — "Midnight glass" mission console.
+ *
+ * Palette anchors: #08090F base, #141A2E panel, #8B7CF6 violet accent,
+ * #A8D8FF ice-blue accent. Sora for display, Manrope for body,
+ * JetBrains Mono for all numeric telemetry.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sun: var(--sun);
+  --color-earth: var(--earth);
+  --color-shadow: var(--shadow);
+  --color-panel: var(--panel);
+  --color-terrain: var(--terrain);
+  --color-terrain-edge: var(--terrain-edge);
+  --color-hairline: var(--hairline);
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* #08090F */
+  --background: oklch(0.126 0.014 277);
+  /* near #A8D8FF, lifted for body legibility */
+  --foreground: oklch(0.93 0.032 238);
+  /* #141A2E */
+  --card: oklch(0.212 0.036 272);
+  --card-foreground: oklch(0.93 0.032 238);
+  --popover: oklch(0.212 0.036 272);
+  --popover-foreground: oklch(0.93 0.032 238);
+
+  /* #8B7CF6 */
+  --primary: oklch(0.653 0.181 291);
+  --primary-foreground: oklch(0.126 0.014 277);
+  /* #A8D8FF */
+  --accent: oklch(0.865 0.06 235);
+  --accent-foreground: oklch(0.126 0.014 277);
+
+  --secondary: oklch(0.26 0.04 273);
+  --secondary-foreground: oklch(0.93 0.032 238);
+  --muted: oklch(0.24 0.038 273);
+  --muted-foreground: oklch(0.7 0.045 250);
+
+  --destructive: oklch(0.68 0.185 18);
+  --destructive-foreground: oklch(0.98 0.005 240);
+
+  --border: oklch(0.653 0.181 291 / 20%);
+  --hairline: oklch(0.653 0.181 291 / 12%);
+  --input: oklch(0.653 0.181 291 / 26%);
+  --ring: oklch(0.653 0.181 291);
+
+  /* Sun track = violet accent, Earth track = ice blue */
+  --sun: oklch(0.653 0.181 291);
+  --earth: oklch(0.865 0.06 235);
+  --shadow: oklch(0.16 0.02 275);
+  --panel: oklch(0.212 0.036 272);
+  --terrain: oklch(0.212 0.036 272 / 88%);
+  --terrain-edge: oklch(0.653 0.181 291 / 55%);
+  --grid-line: oklch(0.653 0.181 291 / 26%);
+
+  --chart-1: oklch(0.653 0.181 291);
+  --chart-2: oklch(0.865 0.06 235);
+  --chart-3: oklch(0.6 0.09 280);
+  --chart-4: oklch(0.75 0.11 200);
+  --chart-5: oklch(0.68 0.185 18);
+  --sidebar: oklch(0.15 0.02 276);
+  --sidebar-foreground: oklch(0.93 0.032 238);
+  --sidebar-primary: oklch(0.653 0.181 291);
+  --sidebar-primary-foreground: oklch(0.126 0.014 277);
+  --sidebar-accent: oklch(0.26 0.04 273);
+  --sidebar-accent-foreground: oklch(0.93 0.032 238);
+  --sidebar-border: oklch(0.653 0.181 291 / 20%);
+  --sidebar-ring: oklch(0.653 0.181 291);
+
+  --glow-primary: 0 0 15px oklch(0.653 0.181 291 / 40%);
+  --glow-accent: 0 0 15px oklch(0.865 0.06 235 / 40%);
+  --shadow-panel: 0 24px 60px -20px oklch(0.05 0.01 277 / 80%);
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "tnum" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Fine dotted instrument texture used behind panels. */
+@utility grid-texture {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: radial-gradient(var(--primary) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+}
+
+@utility glass-panel {
+  background-color: color-mix(in oklab, var(--panel) 55%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+}
+
+@utility glow-primary {
+  box-shadow: var(--glow-primary);
+}
+
+@utility glow-accent {
+  box-shadow: var(--glow-accent);
+}
+
+@utility label-caps {
+  font-size: 10px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+}
