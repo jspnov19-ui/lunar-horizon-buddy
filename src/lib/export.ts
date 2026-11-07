@@ -10,11 +10,20 @@ function download(filename: string, mime: string, body: string) {
   URL.revokeObjectURL(url);
 }
 
-/** One row per site: the headline planning numbers. */
+function csvCell(value: string | number) {
+  const text = String(value);
+  const safe = /^[=+@\-]/.test(text) && typeof value === 'string' ? "'" + text : text;
+  return /[",\r\n]/.test(safe) ? '"' + safe.replaceAll('"', '""') + '"' : safe;
+}
+
+/** One row per site and window: the headline planning numbers. */
 export function summaryCsv(analyses: SiteAnalysis[]): string {
   const head = [
     "site",
     "region",
+    "window_start_utc",
+    "window_end_utc",
+    "horizon_profile_deg",
     "latitude_deg",
     "longitude_deg",
     "elevation_m",
@@ -30,6 +39,9 @@ export function summaryCsv(analyses: SiteAnalysis[]): string {
     [
       a.site.name,
       a.site.region,
+      formatUTC(a.samples[0]?.t ?? 0),
+      formatUTC(a.samples[a.samples.length - 1]?.t ?? 0),
+      a.site.horizon.join(";"),
       a.site.lat,
       a.site.lon,
       a.site.elevation,
@@ -41,7 +53,7 @@ export function summaryCsv(analyses: SiteAnalysis[]): string {
       a.meanEarthAlt.toFixed(3),
       a.sunlitIntervals.length,
     ]
-      .map((v) => (typeof v === "string" && v.includes(",") ? `"${v}"` : v))
+      .map(csvCell)
       .join(","),
   );
   return [head.join(","), ...rows].join("\n");
@@ -56,7 +68,8 @@ export function timeseriesCsv(analyses: SiteAnalysis[]): string {
     "sun_azimuth_deg",
     "earth_elevation_deg",
     "earth_azimuth_deg",
-    "terrain_horizon_deg",
+    "sun_terrain_horizon_deg",
+    "earth_terrain_horizon_deg",
     "sunlit",
     "earth_visible",
   ];
@@ -65,13 +78,14 @@ export function timeseriesCsv(analyses: SiteAnalysis[]): string {
     for (const s of a.samples) {
       rows.push(
         [
-          a.site.name.includes(",") ? `"${a.site.name}"` : a.site.name,
+          csvCell(a.site.name),
           formatUTC(s.t),
           s.sunAlt.toFixed(3),
           s.sunAz.toFixed(2),
           s.earthAlt.toFixed(3),
           s.earthAz.toFixed(2),
           s.sunHorizon.toFixed(3),
+          s.earthHorizon.toFixed(3),
           s.sunUp ? 1 : 0,
           s.earthUp ? 1 : 0,
         ].join(","),
@@ -89,9 +103,14 @@ export function reportJson(
     {
       generated: new Date().toISOString(),
       window: { startUtc: meta.start, durationDays: meta.days },
-      note: "Planning-grade geometry. Horizon profiles are illustrative, not surveyed.",
+      note: "Planning-grade geometry. Curated horizon profiles are illustrative; custom sites use user-defined constant horizons. Not surveyed or flight-certified. Intervals are clipped to each window and events are sample-limited.",
       sites: analyses.map((a) => ({
         name: a.site.name,
+        startUtc: formatUTC(a.samples[0]?.t ?? 0),
+        endUtc: formatUTC(a.samples[a.samples.length - 1]?.t ?? 0),
+        sampleStepSeconds: a.stepMs / 1000,
+        horizonProfileDeg: a.site.horizon,
+        horizonNotes: a.site.notes,
         region: a.site.region,
         lat: a.site.lat,
         lon: a.site.lon,
