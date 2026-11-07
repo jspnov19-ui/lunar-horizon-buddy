@@ -1,9 +1,12 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, Compass, SlidersHorizontal, Sun } from "lucide-react";
+import { ArrowRight, Compass, SlidersHorizontal, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogTrigger,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -31,14 +34,14 @@ const steps = [
 ];
 
 export function GuidedTour() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   useEffect(() => {
     try {
-      if (!window.localStorage.getItem(TOUR_KEY)) setOpen(true);
+      if (window.localStorage.getItem(TOUR_KEY)) setOpen(false);
     } catch {
-      setOpen(true);
+      // Keep the tour visible when storage is unavailable.
     }
   }, []);
 
@@ -54,8 +57,30 @@ export function GuidedTour() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(value) => !value && close()}>
-      <DialogContent className="max-w-xl border-primary/30 bg-card/95 shadow-[var(--shadow-panel)] backdrop-blur-xl">
+    <>
+      <Dialog open={open} onOpenChange={(value) => (value ? setOpen(true) : close())}>
+        <DialogTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="fixed bottom-4 right-4 z-40 bg-card/90 shadow-lg backdrop-blur-sm"
+        >
+          Quick tour
+        </Button>
+        </DialogTrigger>
+        {open && (
+          <div className="fixed inset-x-4 bottom-16 z-50 mx-auto max-w-xl rounded-xl border border-primary/30 bg-card p-5 shadow-[var(--shadow-panel)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-display text-lg font-semibold">Quick start · 30-second tour</p>
+                <p className="mt-1 text-sm text-muted-foreground">Pick a site, read the Sky Dome for Sun and Earth visibility, then scrub the time slider through the lunar month.</p>
+              </div>
+              <Button size="sm" onClick={close}>Got it</Button>
+            </div>
+          </div>
+        )}
+        <DialogContent className="max-w-xl border-primary/30 bg-card/95 shadow-[var(--shadow-panel)] backdrop-blur-xl">
         <DialogHeader>
           <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
             <Compass />
@@ -98,7 +123,8 @@ export function GuidedTour() {
             Start exploring <ArrowRight data-icon="inline-end" />
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
