@@ -1,4 +1,5 @@
 import { horizonAt } from "@/lib/astro";
+import { ExplainedTerm } from "@/components/InfoTooltip";
 import type { SiteAnalysis } from "@/lib/analysis";
 
 const R = 150;
@@ -8,16 +9,13 @@ const CY = 170;
 function project(alt: number, az: number) {
   const clamped = Math.max(-6, Math.min(90, alt));
   const r = R * (1 - clamped / 90);
-  return [CX + r * Math.sin((az * Math.PI) / 180), CY - r * Math.cos((az * Math.PI) / 180)] as const;
+  return [
+    CX + r * Math.sin((az * Math.PI) / 180),
+    CY - r * Math.cos((az * Math.PI) / 180),
+  ] as const;
 }
 
-export function SkyDome({
-  analysis,
-  index,
-}: {
-  analysis: SiteAnalysis;
-  index: number;
-}) {
+export function SkyDome({ analysis, index }: { analysis: SiteAnalysis; index: number }) {
   const { site, samples } = analysis;
   const cur = samples[Math.min(index, samples.length - 1)];
 
@@ -50,11 +48,16 @@ export function SkyDome({
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          Sky dome
+          <ExplainedTerm term="Sky Dome" />
         </span>
         <span className="font-mono text-[11px] text-foreground">{site.name}</span>
       </div>
-      <svg viewBox="0 0 340 340" className="w-full" role="img" aria-label={`Sky dome for ${site.name}`}>
+      <svg
+        viewBox="0 0 340 340"
+        className="w-full"
+        role="img"
+        aria-label={`Sky dome for ${site.name}`}
+      >
         <defs>
           <radialGradient id="domeBg" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="oklch(0.28 0.02 250)" />
@@ -77,12 +80,40 @@ export function SkyDome({
         <circle cx={CX} cy={CY} r={R * (1 - 0 / 90)} fill="none" stroke="var(--grid-line)" />
         {[0, 45, 90, 135, 180, 225, 270, 315].map((az) => {
           const [x, y] = project(-6, az);
-          return <line key={az} x1={CX} y1={CY} x2={x} y2={y} stroke="var(--grid-line)" strokeWidth={0.5} />;
+          return (
+            <line
+              key={az}
+              x1={CX}
+              y1={CY}
+              x2={x}
+              y2={y}
+              stroke="var(--grid-line)"
+              strokeWidth={0.5}
+            />
+          );
         })}
-        <path d={maskPath} fill="var(--terrain)" fillRule="evenodd" stroke="var(--terrain-edge)" strokeWidth={0.75} />
+        <path
+          d={maskPath}
+          fill="var(--terrain)"
+          fillRule="evenodd"
+          stroke="var(--terrain-edge)"
+          strokeWidth={0.75}
+        />
 
-        <polyline points={track("earth")} fill="none" stroke="var(--earth)" strokeWidth={1} opacity={0.45} />
-        <polyline points={track("sun")} fill="none" stroke="var(--sun)" strokeWidth={1} opacity={0.5} />
+        <polyline
+          points={track("earth")}
+          fill="none"
+          stroke="var(--earth)"
+          strokeWidth={1}
+          opacity={0.45}
+        />
+        <polyline
+          points={track("sun")}
+          fill="none"
+          stroke="var(--sun)"
+          strokeWidth={1}
+          opacity={0.5}
+        />
 
         {earthPt && (
           <g>
@@ -133,13 +164,15 @@ export function SkyDome({
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Terrain</dt>
+            <dt className="text-muted-foreground">
+              <ExplainedTerm term="Terrain Mask" />
+            </dt>
             <dd className="text-foreground">{cur.sunHorizon.toFixed(2)}°</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Link</dt>
             <dd className={cur.earthUp ? "text-earth" : "text-destructive"}>
-              {cur.earthUp ? "DTE open" : "occulted"}
+              {cur.earthUp ? "DTE open" : <ExplainedTerm term="Occulted" />}
             </dd>
           </div>
         </dl>

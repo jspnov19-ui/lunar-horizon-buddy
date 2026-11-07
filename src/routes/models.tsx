@@ -5,6 +5,8 @@ import { SkyDome } from "@/components/SkyDome";
 import { ElevationChart } from "@/components/ElevationChart";
 import { TimelineStrip } from "@/components/TimelineStrip";
 import { SITES } from "@/lib/sites";
+import { MissionSummary } from "@/components/MissionSummary";
+import { ExplainedTerm } from "@/components/InfoTooltip";
 import {
   formatDate,
   formatDuration,
@@ -55,23 +57,31 @@ function ModelsPage() {
   const startMs = useMemo(() => Date.parse(`${startDate}T00:00:00Z`), [startDate]);
 
   const primary = useMemo(
-    () => sampleSite(SITES.find((s) => s.id === primaryId)!, startMs, days, STEPS),
+    () =>
+      sampleSite(
+        SITES.find((s) => s.id === primaryId)!,
+        startMs,
+        days,
+        STEPS,
+      ),
     [primaryId, startMs, days],
   );
   const compare = useMemo(
     () =>
       compareId
-        ? sampleSite(SITES.find((s) => s.id === compareId)!, startMs, days, STEPS)
+        ? sampleSite(
+            SITES.find((s) => s.id === compareId)!,
+            startMs,
+            days,
+            STEPS,
+          )
         : null,
     [compareId, startMs, days],
   );
 
   useEffect(() => {
     if (!playing) return;
-    const id = window.setInterval(
-      () => setIndex((i) => (i >= STEPS ? 0 : i + speed)),
-      40,
-    );
+    const id = window.setInterval(() => setIndex((i) => (i >= STEPS ? 0 : i + speed)), 40);
     return () => window.clearInterval(id);
   }, [playing, speed]);
 
@@ -110,9 +120,7 @@ function ModelsPage() {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-4 text-muted-foreground">
-            <span>
-              EPOCH J2000 · COORD SYS SELENOGRAPHIC
-            </span>
+            <span>EPOCH J2000 · COORD SYS SELENOGRAPHIC</span>
             <span className="rounded-md border border-hairline bg-shadow px-2 py-1 text-foreground">
               {formatUTC(cursorT)} UTC
             </span>
@@ -164,9 +172,8 @@ function ModelsPage() {
                         </span>
                       </div>
                       <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-                        {Math.abs(site.lat).toFixed(2)}°S,{" "}
-                        {Math.abs(site.lon).toFixed(1)}°{site.lon < 0 ? "W" : "E"} ·{" "}
-                        {site.elevation.toLocaleString()} m
+                        {Math.abs(site.lat).toFixed(2)}°S, {Math.abs(site.lon).toFixed(1)}°
+                        {site.lon < 0 ? "W" : "E"} · {site.elevation.toLocaleString()} m
                       </div>
                     </button>
                     {!isPrimary && (
@@ -185,13 +192,14 @@ function ModelsPage() {
 
           {/* Main instrument area */}
           <main className="relative flex min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
+            <MissionSummary primary={primary} compare={compare} days={days} />
             <div className="flex flex-col gap-6 lg:flex-row">
               {/* Sky dome */}
               <div className="flex flex-1 flex-col lg:flex-[1.5]">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2 text-sm font-bold">
                     <span className="glow-primary size-2 animate-pulse rounded-full bg-primary" />
-                    SKY DOME TELEMETRY
+                    <ExplainedTerm term="Sky Dome" /> telemetry
                   </div>
                   <div className="flex gap-4 font-mono text-[10px] uppercase tracking-widest">
                     <span className="flex items-center gap-2">
@@ -261,9 +269,7 @@ function ModelsPage() {
                   <div className="flex flex-col gap-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Selected A</span>
-                      <span className="font-mono text-foreground">
-                        {primary.site.name}
-                      </span>
+                      <span className="font-mono text-foreground">{primary.site.name}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Target B</span>
