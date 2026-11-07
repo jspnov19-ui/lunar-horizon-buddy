@@ -30,7 +30,7 @@ function PlannerPage() {
   const [priority, setPriority] = useState<Priority>('balanced');
   const [sites, setSites] = useState<LandingSite[]>(SITES);
   const [selected, setSelected] = useState(SITES.map(s => s.id));
-  const [detailId, setDetailId] = useState(SITES[0].id);
+  const [detailId, setDetailId] = useState(SITES[0]?.id ?? '');
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState('');
