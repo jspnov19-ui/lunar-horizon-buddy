@@ -4,13 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system — "Midnight glass" mission console.
- *
- * Palette anchors: #08090F base, #141A2E panel, #8B7CF6 violet accent,
- * #A8D8FF ice-blue accent. Sora for display, Manrope for body,
- * JetBrains Mono for all numeric telemetry.
- */
+/* Restrained graphite mission workspace with amber solar and cyan Earth telemetry. */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -69,60 +63,60 @@
   --radius: 0.5rem;
 
   /* #08090F */
-  --background: oklch(0.126 0.014 277);
+  --background: oklch(0.16 0.004 260);
   /* near #A8D8FF, lifted for body legibility */
-  --foreground: oklch(0.93 0.032 238);
+  --foreground: oklch(0.94 0.006 250);
   /* #141A2E */
-  --card: oklch(0.212 0.036 272);
-  --card-foreground: oklch(0.93 0.032 238);
-  --popover: oklch(0.212 0.036 272);
-  --popover-foreground: oklch(0.93 0.032 238);
+  --card: oklch(0.215 0.006 260);
+  --card-foreground: oklch(0.94 0.006 250);
+  --popover: oklch(0.215 0.006 260);
+  --popover-foreground: oklch(0.94 0.006 250);
 
   /* #8B7CF6 */
-  --primary: oklch(0.653 0.181 291);
-  --primary-foreground: oklch(0.126 0.014 277);
+  --primary: oklch(0.79 0.115 175);
+  --primary-foreground: oklch(0.16 0.004 260);
   /* #A8D8FF */
-  --accent: oklch(0.865 0.06 235);
-  --accent-foreground: oklch(0.126 0.014 277);
+  --accent: oklch(0.80 0.10 230);
+  --accent-foreground: oklch(0.16 0.004 260);
 
-  --secondary: oklch(0.26 0.04 273);
-  --secondary-foreground: oklch(0.93 0.032 238);
-  --muted: oklch(0.24 0.038 273);
-  --muted-foreground: oklch(0.7 0.045 250);
+  --secondary: oklch(0.265 0.006 260);
+  --secondary-foreground: oklch(0.94 0.006 250);
+  --muted: oklch(0.24 0.006 260);
+  --muted-foreground: oklch(0.72 0.012 250);
 
   --destructive: oklch(0.68 0.185 18);
   --destructive-foreground: oklch(0.98 0.005 240);
 
-  --border: oklch(0.653 0.181 291 / 20%);
-  --hairline: oklch(0.653 0.181 291 / 12%);
-  --input: oklch(0.653 0.181 291 / 26%);
-  --ring: oklch(0.653 0.181 291);
+  --border: oklch(0.79 0.115 175 / 20%);
+  --hairline: oklch(0.79 0.115 175 / 12%);
+  --input: oklch(0.79 0.115 175 / 26%);
+  --ring: oklch(0.79 0.115 175);
 
   /* Sun track = violet accent, Earth track = ice blue */
-  --sun: oklch(0.653 0.181 291);
-  --earth: oklch(0.865 0.06 235);
-  --shadow: oklch(0.16 0.02 275);
-  --panel: oklch(0.212 0.036 272);
-  --terrain: oklch(0.212 0.036 272 / 88%);
-  --terrain-edge: oklch(0.653 0.181 291 / 55%);
-  --grid-line: oklch(0.653 0.181 291 / 26%);
+  --sun: oklch(0.82 0.15 85);
+  --earth: oklch(0.80 0.10 230);
+  --shadow: oklch(0.185 0.004 260);
+  --panel: oklch(0.215 0.006 260);
+  --terrain: oklch(0.215 0.006 260 / 88%);
+  --terrain-edge: oklch(0.79 0.115 175 / 55%);
+  --grid-line: oklch(0.79 0.115 175 / 26%);
 
-  --chart-1: oklch(0.653 0.181 291);
-  --chart-2: oklch(0.865 0.06 235);
+  --chart-1: var(--sun);
+  --chart-2: oklch(0.80 0.10 230);
   --chart-3: oklch(0.6 0.09 280);
   --chart-4: oklch(0.75 0.11 200);
   --chart-5: oklch(0.68 0.185 18);
-  --sidebar: oklch(0.15 0.02 276);
-  --sidebar-foreground: oklch(0.93 0.032 238);
-  --sidebar-primary: oklch(0.653 0.181 291);
-  --sidebar-primary-foreground: oklch(0.126 0.014 277);
-  --sidebar-accent: oklch(0.26 0.04 273);
-  --sidebar-accent-foreground: oklch(0.93 0.032 238);
-  --sidebar-border: oklch(0.653 0.181 291 / 20%);
-  --sidebar-ring: oklch(0.653 0.181 291);
+  --sidebar: oklch(0.18 0.004 260);
+  --sidebar-foreground: oklch(0.94 0.006 250);
+  --sidebar-primary: oklch(0.79 0.115 175);
+  --sidebar-primary-foreground: oklch(0.16 0.004 260);
+  --sidebar-accent: oklch(0.265 0.006 260);
+  --sidebar-accent-foreground: oklch(0.94 0.006 250);
+  --sidebar-border: oklch(0.79 0.115 175 / 20%);
+  --sidebar-ring: oklch(0.79 0.115 175);
 
-  --glow-primary: 0 0 15px oklch(0.653 0.181 291 / 40%);
-  --glow-accent: 0 0 15px oklch(0.865 0.06 235 / 40%);
+  --glow-primary: 0 0 15px oklch(0.79 0.115 175 / 40%);
+  --glow-accent: 0 0 15px oklch(0.80 0.10 230 / 40%);
   --shadow-panel: 0 24px 60px -20px oklch(0.05 0.01 277 / 80%);
 }
 
@@ -148,7 +142,7 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
 }
 
@@ -184,6 +178,11 @@
   font-size: 10px;
   line-height: 1.2;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   font-weight: 700;
 }
+
+:root { color-scheme: dark; }
+main { animation: page-enter 220ms ease-out; }
+@keyframes page-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
