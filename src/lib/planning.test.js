@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { customSite, nextTransition, rankSites } from './planning';
-import { sampleSite } from './analysis';
-import { SITES } from './sites';
+import { customSite, nextTransition, rankSites } from './planning.ts';
+import { sampleSite } from './analysis.ts';
+import { SITES } from './sites.ts';
 
 describe('mission planning rules', () => {
   test('custom coordinates cover the lunar sphere and reject out-of-range values', () => {
