@@ -11,3 +11,5 @@
 
 - Keep mission comparison helpers browser-safe and separate from presentation so geometry and window rules can be tested independently.
 - Custom sites use an explicitly declared constant horizon, never an implied surveyed terrain profile; scenario exports include dates and model provenance.
+- External lunar tools use browser-safe site/window URL helpers and explicit observer-altitude assumptions; they never silently change the calculation source.
+- First-visit tour dismissal is device-local browser preference, not mission data; initialize it after hydration to preserve SSR consistency.

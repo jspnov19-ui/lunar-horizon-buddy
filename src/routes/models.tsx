@@ -5,6 +5,10 @@ import { SkyDome } from "@/components/SkyDome";
 import { ElevationChart } from "@/components/ElevationChart";
 import { TimelineStrip } from "@/components/TimelineStrip";
 import { SITES } from "@/lib/sites";
+import { LunarTools } from '@/components/LunarTools';
+import { MissionSummary } from '@/components/MissionSummary';
+import { TermHelp } from '@/components/TermHelp';
+import { rankSites } from '@/lib/planning';
 import {
   formatDate,
   formatDuration,
@@ -26,7 +30,7 @@ export const Route = createFileRoute("/models")({
       {
         property: "og:description",
         content:
-          "Scrub a lunation of Sun and Earth geometry against real terrain horizon masks for eight candidate south-polar landing sites.",
+          "Scrub a lunation of Sun and Earth geometry against illustrative terrain horizon masks for eight candidate south-polar landing sites.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -81,6 +85,8 @@ function ModelsPage() {
 
   return (
     <div className="grid-texture min-h-[calc(100vh-4rem)] bg-background p-4 md:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">Advanced models</h1><LunarTools site={primary.site} startMs={startMs} days={days} /></div>
+      <MissionSummary analysis={primary} alternatives={rankSites(compare ? [primary, compare] : [primary], 'balanced')} />
       <div className="glass-panel relative flex flex-col overflow-hidden rounded-xl shadow-[var(--shadow-panel)]">
         {/* Control strip */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border bg-background/60 px-4 py-3 font-mono text-[11px]">
@@ -397,7 +403,7 @@ function MetricCard({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card/60 p-4 backdrop-blur-md">
-      <div className="label-caps text-muted-foreground">{label}</div>
+      <div className="label-caps text-muted-foreground"><TermHelp term={label} /></div>
       <div className="mt-1 font-display text-3xl font-bold leading-none text-foreground">
         {value}
         <span className="text-lg text-muted-foreground">{unit}</span>
@@ -423,7 +429,7 @@ function SmallStat({
 }) {
   return (
     <div className="rounded-xl border border-hairline bg-card/40 p-3">
-      <div className="label-caps text-muted-foreground">{label}</div>
+      <div className="label-caps text-muted-foreground"><TermHelp term={label} /></div>
       <div
         className={`mt-1 font-mono text-lg font-bold ${
           tone === "sun" ? "text-sun" : tone === "earth" ? "text-earth" : "text-foreground"
