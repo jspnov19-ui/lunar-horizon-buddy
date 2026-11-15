@@ -1,28 +1,17 @@
+import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-
+import { ArrowDown, ArrowRight, Globe2, Radio, Sun } from "lucide-react";
 import heroImage from "@/assets/lunar-south-pole.jpg";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 import { SITES } from "@/lib/sites";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lunar South Pole Analysis — Landing Site Illumination & Comms" },
-      {
-        name: "description",
-        content:
-          "Compare candidate lunar south pole landing sites by solar uptime, longest dark period and direct-to-Earth link availability, modelled across a full lunation.",
-      },
-      {
-        property: "og:title",
-        content: "Lunar South Pole Analysis — Landing Site Illumination & Comms",
-      },
-      {
-        property: "og:description",
-        content:
-          "Solar uptime, shadow episodes and Earth link windows for eight candidate south-polar landing sites.",
-      },
+      { title: "Lunar South Pole | Mission planning in the lunar light" },
+      { name: "description", content: "Explore lunar south-pole landing sites and compare sunlight and Earth-contact windows across mission dates." },
+      { property: "og:title", content: "Lunar South Pole | Mission planning in the lunar light" },
+      { property: "og:description", content: "Explore lunar south-pole landing sites and compare sunlight and Earth-contact windows across mission dates." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -31,26 +20,59 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
-  return <main>
-    <section className="relative overflow-hidden border-b border-hairline">
-      <img src={heroImage} alt="Illustrated lunar south pole terrain in grazing sunlight" className="absolute inset-0 size-full object-cover" />
-      <div className="absolute inset-0 bg-background/65" />
-      <div className="relative mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
-        <p className="label-caps text-primary">Site selection / power / communications</p>
-        <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight md:text-5xl">Lunar landing<br />mission planning</h1>
-        <p className="mt-5 max-w-lg text-base leading-relaxed text-foreground/85">A clearer view of the south pole. Compare landing locations and mission dates against the light and link windows that matter.</p>
-        <div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg"><Link to="/planner">Open planner <ArrowRight /></Link></Button><Button asChild variant="outline" size="lg"><Link to="/how-it-works">How it works</Link></Button></div>
-        <p className="mt-10 font-mono text-xs text-foreground/75">{SITES.length} candidate regions · Custom coordinates · Alternate dates · CSV & JSON exports</p>
+  return <main className="landing-page">
+    <section className="landing-hero relative isolate min-h-[620px] overflow-hidden border-b border-white/10 md:min-h-[690px]">
+      <img src={heroImage} alt="Lunar south-pole ridges illuminated by low sunlight" className="absolute inset-0 -z-20 size-full object-cover object-center" />
+      <div className="landing-hero-shade absolute inset-0 -z-10" />
+      <div className="landing-stars absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-16 md:min-h-[690px] md:grid-cols-[minmax(0,1fr)_330px] md:px-8 md:py-20">
+        <div className="max-w-3xl">
+          <p className="label-caps inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-2 text-white/85 backdrop-blur"><span className="size-1.5 rounded-full bg-sun shadow-[0_0_12px_var(--sun)]" />Lunar south pole <span className="text-white/40">/</span> Mission design</p>
+          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.05] tracking-tight text-white md:text-7xl">Choose a place<br />in the <span className="landing-title-glow">lunar light.</span></h1>
+          <p className="mt-6 max-w-xl text-base leading-7 text-white/75 md:text-lg">A mission planning experience for the Moon’s most challenging frontier. Explore candidate sites, follow the sunlight, and see when Earth stays in view.</p>
+          <div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg" className="h-12 rounded-full px-6"><Link to="/planner">Explore the planner <ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="h-12 rounded-full border-white/25 bg-black/20 px-6 text-white hover:bg-white/10 hover:text-white"><Link to="/how-it-works">How it works</Link></Button></div>
+          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/65"><span>{SITES.length} candidate regions</span><span>Custom site plotting</span><span>Mission window comparison</span></div>
+        </div>
+        <aside className="mission-glance hidden rounded-2xl border border-white/15 p-5 text-white backdrop-blur-xl md:block">
+          <p className="label-caps text-white/55">Mission signals</p>
+          <h2 className="mt-2 text-lg font-semibold">Plan around what matters.</h2>
+          <div className="mt-5 space-y-4">
+            <Signal icon={<Sun className="size-4" />} tone="sun" title="Surface illumination" text="Track sunlight and long-shadow exposure." />
+            <Signal icon={<Globe2 className="size-4" />} tone="earth" title="Earth in view" text="Find direct visibility windows from the surface." />
+            <Signal icon={<Radio className="size-4" />} tone="neutral" title="Mission timing" text="Compare dates, durations, and site rankings." />
+          </div>
+          <div className="mt-5 border-t border-white/10 pt-4 font-mono text-[10px] text-white/45">PRELIMINARY SCREENING <span className="float-right">SOUTH POLE</span></div>
+        </aside>
+        <a href="#workspace" className="absolute bottom-7 left-1/2 flex -translate-x-1/2 items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/55 transition hover:text-white"><ArrowDown className="size-3.5" /> Explore the mission workspace</a>
       </div>
     </section>
-    <section className="mx-auto max-w-7xl px-4 py-10 md:px-8">
-      <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="label-caps text-primary">The decision workspace</p><h2 className="mt-3 text-2xl font-semibold">One mission. Multiple possibilities.</h2></div><Button asChild variant="link"><Link to="/planner">Evaluate landing options <ArrowRight /></Link></Button></div>
-      <div className="mt-8 grid gap-8 border-y border-hairline py-7 md:grid-cols-3">{[
-        ['01', 'Compare locations', 'Curated south-polar regions or your own coordinates, ranked by solar and Earth visibility.'],
-        ['02', 'Explore a schedule change', 'Evaluate two landing dates at the same location with synchronized sky views and timelines.'],
-        ['03', 'Inspect the operational windows', 'Review shadow periods, Earth-link gaps, and sampled rise and set times. Export the full picture.'],
-      ].map(([n,title,text]) => <article key={n}><p className="font-mono text-xs text-primary">{n}</p><h3 className="mt-3 text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p></article>)}</div>
-      <div className="mt-8 flex flex-wrap justify-between gap-5"><p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">Preliminary screening, not flight design. Ephemeris is approximate and terrain masks are illustrative. Sun visibility does not establish electrical output; Earth visibility does not establish a complete radio link.</p><Button asChild variant="outline"><Link to="/models">Advanced models <ArrowRight /></Link></Button></div>
+
+    <section id="workspace" className="landing-content mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
+      <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="label-caps text-primary">A clearer view of the decision</p><h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight md:text-4xl">One mission. Many possible Moons.</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Turn locations and landing dates into an operational picture you can inspect, compare, and explain.</p></div><Button asChild variant="link" className="group"><Link to="/planner">Enter mission planner <ArrowRight className="transition-transform group-hover:translate-x-1" /></Link></Button></div>
+      <div className="mt-9 grid gap-4 md:grid-cols-3">
+        <FeatureCard number="01" icon={<Globe2 className="size-5" />} title="Explore the lunar surface" text="Rotate the NASA-derived Moon model, inspect existing landing candidates, or plot your own coordinates." />
+        <FeatureCard number="02" icon={<Sun className="size-5" />} title="Shape the mission" text="Set a landing date, mission duration, and whether power, Earth visibility, or a balance matters most." />
+        <FeatureCard number="03" icon={<Radio className="size-5" />} title="Read the windows" text="Compare sunlight and Earth-contact availability, inspect shadow and link gaps, and export the timeseries." />
+      </div>
+      <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_auto]">
+        <div className="landing-data-strip grid gap-4 rounded-2xl border border-white/10 p-5 sm:grid-cols-3">
+          <DataPoint label="Candidate sites" value={`${SITES.length} regions`} detail="South-polar study areas" />
+          <DataPoint label="Mission horizon" value="7–365 days" detail="From short sortie to seasonal study" />
+          <DataPoint label="Compare & export" value="CSV · JSON" detail="Summary and sampled timeseries" />
+        </div>
+        <Button asChild variant="outline" className="h-auto rounded-2xl px-5 py-4"><Link to="/models" className="flex flex-col items-start gap-1"><span className="font-semibold">Explore the models <ArrowRight className="ml-1 inline size-4" /></span><span className="text-xs font-normal text-muted-foreground">See data sources and assumptions</span></Link></Button>
+      </div>
+      <p className="mt-7 max-w-4xl border-l-2 border-primary/40 pl-4 text-xs leading-relaxed text-muted-foreground">Preliminary screening, not flight design. Ephemeris is approximate and built-in terrain masks are illustrative. Sun visibility does not establish electrical output; Earth visibility does not establish a complete radio link.</p>
     </section>
   </main>;
+}
+
+function Signal({ icon, tone, title, text }: { icon: ReactNode; tone: string; title: string; text: string }) {
+  return <div className="flex gap-3"><span className={`signal-icon signal-${tone}`}>{icon}</span><div><h3 className="text-sm font-medium">{title}</h3><p className="mt-1 text-xs leading-relaxed text-white/55">{text}</p></div></div>;
+}
+function FeatureCard({ number, icon, title, text }: { number: string; icon: ReactNode; title: string; text: string }) {
+  return <article className="feature-card rounded-2xl border border-white/10 p-5 md:p-6"><div className="flex items-center justify-between"><span className="font-mono text-xs text-primary">{number}</span><span className="feature-icon">{icon}</span></div><h3 className="mt-6 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p></article>;
+}
+function DataPoint({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return <div><p className="label-caps text-muted-foreground">{label}</p><p className="mt-2 font-mono text-sm text-foreground">{value}</p><p className="mt-1 text-[11px] text-muted-foreground">{detail}</p></div>;
 }

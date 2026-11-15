@@ -329,8 +329,8 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
 
   if (failed) return <PolarMapFallback sites={sites} selected={selected} detailId={detailId} onPick={onPick} onAdd={onAdd} />;
 
-  return <div className="overflow-hidden rounded-md border border-hairline bg-[#05060a]">
-    <div className="relative h-[340px] sm:h-[430px] lg:h-[480px]">
+  return <div className="lunar-globe-frame overflow-hidden rounded-2xl border border-white/10 bg-[#05060a]">
+    <div className="relative h-[380px] sm:h-[480px] lg:h-[560px]">
       <div ref={hostRef} className="size-full" />
       {(!worldReady || !modelReady) && <div className="absolute inset-0 z-10 grid place-items-center bg-[#05060a]/80 text-xs text-white/80">Loading NASA lunar surface… {loadProgress}%</div>}
       <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-md border border-white/10 bg-black/40 px-2.5 py-2 text-[10px] text-white/75 backdrop-blur"><Compass className="size-3.5 text-primary" /> SOUTH POLE VIEW <span className="text-white/35">·</span> DRAG TO ORBIT</div>

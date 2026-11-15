@@ -71,22 +71,24 @@ function PlannerPage() {
   const addFromForm = (e: React.FormEvent) => { e.preventDefault(); addCustom(name, Number(lat), Number(lon), Number(horizon)); setName(''); };
   const startNow = () => { const d = new Date(); d.setUTCMinutes(0, 0, 0); setStart(d.toISOString().slice(0, 16)); setIndex(0); };
 
-  return <main className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
-    <header className="mb-8">
-      <p className="label-caps text-primary">Lunar operations / planning</p>
-      <h1 className="mt-3 text-3xl font-semibold md:text-4xl">Where should we land, and when?</h1>
-      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">Three steps: rotate the Moon to pick a site, choose your dates, then read the result. Everything, including the NASA check, is on this page.</p>
+  return <main className="planner-page mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
+    <header className="planner-hero mb-10 overflow-hidden rounded-2xl border border-white/10 px-6 py-8 md:px-10 md:py-10">
+      <p className="label-caps inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"><span className="size-1.5 rounded-full bg-primary shadow-[0_0_10px_var(--primary)]" />Lunar operations <span className="text-white/30">/</span> Mission planner</p>
+      <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">Find your place in the <span className="planner-title-accent">lunar light.</span></h1>
+      <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">Explore candidate landing zones on the Moon, shape a custom site, and see how sunlight and Earth contact change across your mission.</p>
+      <div className="mt-6 flex flex-wrap gap-2 text-[11px] text-white/70"><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">01 <span className="ml-1 text-white/45">Explore the Moon</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">02 <span className="ml-1 text-white/45">Set mission conditions</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">03 <span className="ml-1 text-white/45">Compare the windows</span></span></div>
     </header>
 
     <section aria-labelledby="step-1" className="mb-10">
       <SectionTitle id="step-1" n="1" title="Pick a landing site" />
-      <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_310px]">
         <PolarMap sites={sites} selected={selected} detailId={detail?.site.id ?? detailId} currentTimeMs={startMs + (index / STEPS) * days * 86400000} onPick={pickSite} onAdd={addFromMap} />
-        <div>
+        <div className="site-selector rounded-2xl border border-white/10 p-4 md:p-5">
+          <div className="mb-4"><p className="label-caps text-primary">Site catalog</p><h3 className="mt-1 text-base font-semibold">Landing choices</h3></div>
           <div className="mb-3 flex justify-between text-xs text-muted-foreground"><span>{selected.length} of {sites.length} included in the comparison</span><Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelected(selected.length === sites.length ? [] : sites.map(s => s.id))}>{selected.length === sites.length ? 'Clear' : 'Select all'}</Button></div>
-          <div className="max-h-[460px] space-y-3 overflow-auto pr-1">{sites.map(s => <label key={s.id} className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed"><input type="checkbox" className="mt-1 accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span>{s.name}<span className="block font-mono text-[10px] text-muted-foreground">{Math.abs(s.lat).toFixed(2)}°{s.lat < 0 ? 'S' : 'N'} · {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? 'W' : 'E'}</span></span></label>)}</div>
+          <div className="max-h-[430px] space-y-1 overflow-auto pr-1">{sites.map((s, i) => <label key={s.id} className={`site-choice flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed transition-colors ${detail?.site.id === s.id ? 'site-choice-active' : 'border-transparent hover:border-white/10 hover:bg-white/[0.035]'}`}><input type="checkbox" className="mt-1 accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-medium text-foreground"><span className="font-mono text-[10px] text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>{s.name}</span><span className="mt-1 block pl-7 font-mono text-[10px] text-muted-foreground">{Math.abs(s.lat).toFixed(2)}°{s.lat < 0 ? 'S' : 'N'} · {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? 'W' : 'E'}</span></span></label>)}</div>
           {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
-          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">Sites you plot on the globe use a flat 0° horizon. Built-in sites use illustrative terrain masks.</p>
+          <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/15 p-3"><p className="text-[10px] font-semibold uppercase tracking-wider text-white/65">Horizon assumptions</p><p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">Custom sites use a declared flat 0° horizon. Built-in site terrain masks are illustrative.</p></div>
         </div>
       </div>
     </section>
