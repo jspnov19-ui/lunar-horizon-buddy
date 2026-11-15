@@ -39,6 +39,8 @@ function PlannerPage() {
   const [sites, setSites] = useState<LandingSite[]>(SITES);
   const [selected, setSelected] = useState(SITES.map(s => s.id));
   const [detailId, setDetailId] = useState(SITES[0]?.id ?? '');
+  const [comparePrimaryId, setComparePrimaryId] = useState(SITES[0]?.id ?? '');
+  const [compareSecondaryId, setCompareSecondaryId] = useState(SITES[1]?.id ?? SITES[0]?.id ?? '');
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState('');
@@ -54,6 +56,10 @@ function PlannerPage() {
   const detail = ranked.find(a => a.site.id === detailId) ?? ranked[0];
   const altDetail = alternateRanked.find(a => a.site.id === detail?.site.id);
   const best = ranked[0];
+  const comparePrimary = sites.find(site => site.id === comparePrimaryId);
+  const compareSecondary = sites.find(site => site.id === compareSecondaryId);
+  const comparePrimaryAnalysis = useMemo(() => valid && comparePrimary ? sampleSite(comparePrimary, startMs, days, STEPS) : null, [valid, comparePrimary, startMs, days]);
+  const compareSecondaryAnalysis = useMemo(() => valid && compareSecondary ? sampleSite(compareSecondary, startMs, days, STEPS) : null, [valid, compareSecondary, startMs, days]);
   const all = [...ranked, ...alternateRanked];
   const simulatorHref = detail
     ? detail.site.id.startsWith('custom-')
@@ -82,7 +88,7 @@ function PlannerPage() {
   return <main className="planner-page mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
     <header className="planner-hero mb-10 overflow-hidden rounded-2xl border border-white/10 px-6 py-8 md:px-10 md:py-10">
       <p className="label-caps inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary"><span className="size-1.5 rounded-full bg-primary shadow-[0_0_10px_var(--primary)]" />Lunar operations <span className="text-white/30">/</span> Mission planner</p>
-      <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">Find your place in the <span className="planner-title-accent">lunar light.</span></h1>
+      <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">Find the landing site</h1>
       <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">Explore candidate landing zones on the Moon, shape a custom site, and see how sunlight and Earth contact change across your mission.</p>
       <div className="mt-6 flex flex-wrap gap-2 text-[11px] text-white/70"><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">01 <span className="ml-1 text-white/45">Explore the Moon</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">02 <span className="ml-1 text-white/45">Set mission conditions</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">03 <span className="ml-1 text-white/45">Compare the windows</span></span></div>
       <div className="planner-telemetry-rail mt-7"><div><span>LOCATIONS IN VIEW</span><strong>{selected.length}<small> / {sites.length}</small></strong></div><div><span>MISSION WINDOW</span><strong>{days === 29.53 ? '29.53' : days}<small> days</small></strong></div><div><span>RANKING PRIORITY</span><strong>{priority === 'comms' ? 'Earth link' : priority === 'power' ? 'Power' : 'Balanced'}</strong></div><div className="planner-rail-orbit" aria-hidden="true"><i/><i/><i/></div></div>
@@ -128,6 +134,8 @@ function PlannerPage() {
 
         <div className="mt-8"><MissionSummary analysis={detail} alternatives={ranked} /></div>
 
+        <section className="site-compare mt-8" aria-labelledby="site-compare-title"><div className="site-compare-heading"><div><p className="label-caps text-primary">Side-by-side study</p><h2 id="site-compare-title" className="mt-2 text-xl font-semibold md:text-2xl">Compare two landing sites</h2><p className="mt-2 text-xs text-muted-foreground">Both sites use the same {days === 29.53 ? 'lunar-cycle' : `${days}-day`} window and ranking priority.</p></div><div className="site-compare-selects"><label>Site A<select value={comparePrimaryId} onChange={event => setComparePrimaryId(event.target.value)} className={FIELD}>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select></label><span className="site-compare-vs">VS</span><label>Site B<select value={compareSecondaryId} onChange={event => setCompareSecondaryId(event.target.value)} className={FIELD}>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select></label></div></div><div className="site-compare-cards">{comparePrimaryAnalysis && <SiteCompareCard analysis={comparePrimaryAnalysis} />}{compareSecondaryAnalysis && <SiteCompareCard analysis={compareSecondaryAnalysis} />}</div></section>
+
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p className="label-caps text-primary">Selected location</p><h2 className="mt-2 text-xl font-semibold">{detail.site.name}</h2></div><div className="flex items-center gap-2"><Button size="icon" variant="outline" title="Reset timeline" aria-label="Reset timeline" onClick={() => { setIndex(0); setPlaying(false); }}><RotateCcw /></Button><Button size="icon" title={playing ? 'Pause timeline' : 'Play timeline'} aria-label={playing ? 'Pause timeline' : 'Play timeline'} onClick={() => setPlaying(v => !v)}>{playing ? <Pause /> : <Play />}</Button></div></div>
         <div className={`grid gap-6 ${compare ? 'xl:grid-cols-2' : ''}`}><WindowView analysis={detail} index={index} onScrub={setIndex} label="Primary window" />{compare && altDetail && <WindowView analysis={altDetail} index={index} onScrub={setIndex} label="Alternate window" />}</div>
         <input type="range" min={0} max={STEPS} value={index} onChange={e => setIndex(Number(e.target.value))} aria-label="Mission timeline" className="mt-6 w-full accent-primary" />
@@ -135,7 +143,7 @@ function PlannerPage() {
         {compare && altDetail && <div className="mt-6 border-y border-hairline py-4 text-sm"><CalendarDays className="mr-2 inline size-4 text-primary" />Alternate date at this location: <strong className="text-sun">{delta(altDetail.illumination - detail.illumination)} pp sunlight</strong> · <strong className="text-earth">{delta(altDetail.earthVisibility - detail.earthVisibility)} pp Earth visibility</strong></div>}
 
         <details className="mt-10 border-t border-hairline pt-5">
-          <summary className="cursor-pointer text-sm font-medium text-primary">Advanced: compare another date, enter coordinates, export data</summary>
+          <summary className="cursor-pointer text-sm font-medium text-primary">More tools: alternate dates, custom sites, and exports</summary>
           <div className="mt-5 grid gap-8 md:grid-cols-3">
             <div><h3 className="text-sm font-semibold">Compare another landing date</h3>
               <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={compare} onChange={e => setCompare(e.target.checked)} className="accent-primary" />Show a second window</label>
@@ -154,6 +162,9 @@ function PlannerPage() {
   </main>;
 }
 function delta(value: number) { return `${value >= 0 ? '+' : ''}${(value * 100).toFixed(1)}`; }
+function SiteCompareCard({ analysis }: { analysis: SiteAnalysis }) {
+  return <article className="site-compare-card"><div><p className="label-caps text-white/40">{analysis.site.region}</p><h3 className="mt-2 text-lg font-semibold">{analysis.site.name}</h3><p className="mt-1 font-mono text-[9px] text-white/40">{Math.abs(analysis.site.lat).toFixed(2)}°S · {Math.abs(analysis.site.lon).toFixed(2)}°{analysis.site.lon < 0 ? 'W' : 'E'}</p></div><div className="site-compare-gauges"><MetricRing label="Sunlight" value={analysis.illumination} tone="sun"/><MetricRing label="Earth view" value={analysis.earthVisibility} tone="earth"/></div><div className="site-compare-foot"><span>LONGEST DARK <b>{formatDuration(analysis.longestDarkHours)}</b></span><span>LONGEST LINK GAP <b>{formatDuration(analysis.longestGapHours)}</b></span></div></article>;
+}
 function MetricRing({ label, value, tone }: { label: string; value: number; tone: 'sun' | 'earth' }) {
   const radius = 31, circumference = 2 * Math.PI * radius, amount = Math.max(0, Math.min(1, value));
   return <div className={`metric-ring metric-ring-${tone}`}><svg viewBox="0 0 76 76" role="img" aria-label={`${label}: ${Math.round(amount * 100)} percent`}><circle className="metric-ring-track" cx="38" cy="38" r={radius}/><circle className="metric-ring-value" cx="38" cy="38" r={radius} strokeDasharray={circumference} strokeDashoffset={circumference * (1 - amount)}/></svg><strong>{Math.round(amount * 100)}<small>%</small></strong><span>{label}</span></div>;
