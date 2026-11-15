@@ -35,7 +35,7 @@ export function QuickStartTour() {
       <DialogContent className="max-h-[88dvh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl border-white/10 bg-[#10141b] p-0 shadow-2xl sm:max-w-xl">
         <div className="tour-heading px-6 pb-5 pt-6 sm:px-8 sm:pt-8">
           <DialogHeader>
-            <div className="flex items-center justify-between"><span className="label-caps text-primary">Mission planner <span className="mx-1 text-white/30">/</span> 4-step tour</span><span className="font-mono text-[10px] text-white/45">{String(step + 1).padStart(2, '0')} / {STEPS.length}</span></div>
+            <div className="flex items-center justify-between"><span className="label-caps text-primary">Mission planner <span className="mx-1 text-white/30">/</span> 4-step tour</span><span className="font-mono text-[10px] text-white/45">{String(step + 1).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}</span></div>
             <div className="mt-5 flex items-center gap-3"><span className="tour-step-icon"><StepIcon className="size-5" /></span><div><p className="label-caps text-white/45">{current.kicker}</p><DialogTitle className="mt-1 text-xl">{current.title}</DialogTitle></div></div>
             <DialogDescription className="pt-3 leading-relaxed">{current.description}</DialogDescription>
           </DialogHeader>

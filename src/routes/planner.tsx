@@ -28,6 +28,11 @@ const STEPS = 720;
 const INITIAL = '2026-11-07T00:00';
 const FIELD = 'w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary';
 const PRIORITY_TEXT: Record<Priority, string> = { power: 'power', balanced: 'a balance of power and Earth contact', comms: 'Earth contact' };
+const RANKING_EXPLANATION: Record<Priority, string> = {
+  power: 'Power ranking combines sunlight (75%) with Earth visibility (25%), so the site with the most sunlight may not rank first if its Earth visibility is much lower.',
+  balanced: 'Balanced ranking gives sunlight and Earth visibility equal weight (50% each).',
+  comms: 'Earth link ranking combines Earth visibility (75%) with sunlight (25%), so the site with the highest Earth visibility may not rank first if its sunlight is much lower.',
+};
 
 function PlannerPage() {
   const [start, setStart] = useState(INITIAL);
@@ -108,7 +113,7 @@ function PlannerPage() {
           <Button variant="link" size="sm" className="mt-1 h-auto p-0 text-xs" onClick={startNow}>Use today</Button>
           {!valid && <p role="alert" className="mt-2 text-xs text-destructive">Choose a valid landing date.</p>}</div>
         <label className="block text-xs font-medium">How long<select aria-label="Mission duration" value={days} onChange={e => { setDays(Number(e.target.value)); setIndex(0); }} className={`${FIELD} mt-2`}><option value={7}>7 days</option><option value={14}>14 days</option><option value={29.53}>One lunar cycle · 29.53 days</option><option value={90}>90 days</option><option value={365}>One year · seasonal study</option></select></label>
-        <div><p className="text-xs font-medium">What matters most?</p><div className="mt-2 flex gap-1 rounded-md bg-secondary p-1">{(['power', 'balanced', 'comms'] as const).map(p => <Button key={p} size="sm" variant={priority === p ? 'default' : 'ghost'} aria-pressed={priority === p} className="flex-1 px-2" onClick={() => setPriority(p)}>{p === 'power' ? 'Power' : p === 'comms' ? 'Earth link' : 'Balanced'}</Button>)}</div></div>
+        <div><p className="text-xs font-medium">What matters most?</p><div className="mt-2 flex gap-1 rounded-md bg-secondary p-1">{(['power', 'balanced', 'comms'] as const).map(p => <Button key={p} size="sm" variant={priority === p ? 'default' : 'ghost'} aria-pressed={priority === p} className="flex-1 px-2" onClick={() => setPriority(p)}>{p === 'power' ? 'Power' : p === 'comms' ? 'Earth link' : 'Balanced'}</Button>)}</div><p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">{RANKING_EXPLANATION[priority]} Percentages in the table are rounded; rankings use their full values.</p></div>
       </div>
     </section>
 
