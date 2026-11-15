@@ -53,13 +53,34 @@ const PIPELINE = [
 ];
 
 const GLOSSARY = [
-  ["Selenographic coordinates", "Latitude and longitude on the Moon, with 0° longitude facing Earth on average."],
-  ["Optical libration", "The apparent monthly rocking of the Moon that shifts which face and pole geometry we see."],
-  ["Horizon mask", "The elevation of surrounding terrain as a function of azimuth — what actually blocks the Sun or Earth at a polar site."],
-  ["Solar uptime", "The fraction of the analysed window in which the Sun's disc clears the terrain horizon, a proxy for photovoltaic power availability."],
-  ["DTE link", "Direct-to-Earth communication. Available only while Earth is above the local terrain horizon; otherwise a relay is required."],
-  ["PSR", "Permanently shadowed region — a floor or pocket that never receives direct sunlight, where water ice can be cold-trapped."],
-  ["Lunation", "One synodic month, about 29.53 days — the natural period for polar illumination cycles."],
+  [
+    "Selenographic coordinates",
+    "Latitude and longitude on the Moon, with 0° longitude facing Earth on average.",
+  ],
+  [
+    "Optical libration",
+    "The apparent monthly rocking of the Moon that shifts which face and pole geometry we see.",
+  ],
+  [
+    "Horizon mask",
+    "The elevation of surrounding terrain as a function of azimuth — what actually blocks the Sun or Earth at a polar site.",
+  ],
+  [
+    "Solar uptime",
+    "The fraction of the analysed window in which the Sun's disc clears the terrain horizon, a proxy for photovoltaic power availability.",
+  ],
+  [
+    "DTE link",
+    "Direct-to-Earth communication. Available only while Earth is above the local terrain horizon; otherwise a relay is required.",
+  ],
+  [
+    "PSR",
+    "Permanently shadowed region — a floor or pocket that never receives direct sunlight, where water ice can be cold-trapped.",
+  ],
+  [
+    "Lunation",
+    "One synodic month, about 29.53 days — the natural period for polar illumination cycles.",
+  ],
 ];
 
 const LIMITS = [
@@ -91,10 +112,9 @@ function MethodsPage() {
           <span className="text-primary"> light and link</span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          Every number in this tool comes from geometry computed in the browser — no
-          precomputed tables, no server round trip. This page documents the chain from
-          ephemeris to mission statistic, and is explicit about where the model's
-          confidence ends.
+          Every number in this tool comes from geometry computed in the browser — no precomputed
+          tables, no server round trip. This page documents the chain from ephemeris to mission
+          statistic, and is explicit about where the model's confidence ends.
         </p>
 
         {/* Pipeline */}
@@ -106,16 +126,12 @@ function MethodsPage() {
                 key={p.step}
                 className="glass-panel flex flex-col gap-3 rounded-xl p-5 transition-colors hover:border-input sm:flex-row sm:gap-6"
               >
-                <span className="font-mono text-sm font-bold text-primary sm:pt-1">
-                  {p.step}
-                </span>
+                <span className="font-mono text-sm font-bold text-primary sm:pt-1">{p.step}</span>
                 <div>
                   <h3 className="font-display text-base font-semibold text-foreground">
                     {p.title}
                   </h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                    {p.body}
-                  </p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{p.body}</p>
                 </div>
               </li>
             ))}
@@ -126,8 +142,8 @@ function MethodsPage() {
         <section className="mt-14">
           <h2 className="label-caps text-primary">Site register</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Coordinates are representative of each region's centre, drawn from published
-            CLPS and Artemis site studies.
+            Coordinates are representative of each region's centre, drawn from published CLPS and
+            Artemis site studies.
           </p>
           <div className="glass-panel mt-5 overflow-x-auto rounded-xl">
             <table className="w-full min-w-[560px] text-left">
@@ -143,9 +159,7 @@ function MethodsPage() {
               <tbody>
                 {SITES.map((s) => (
                   <tr key={s.id} className="border-b border-hairline last:border-0">
-                    <td className="px-4 py-3 text-xs font-semibold text-foreground">
-                      {s.name}
-                    </td>
+                    <td className="px-4 py-3 text-xs font-semibold text-foreground">{s.name}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">{s.region}</td>
                     <td className="px-4 py-3 font-mono text-xs text-foreground">
                       {Math.abs(s.lat).toFixed(2)}°S
@@ -169,12 +183,8 @@ function MethodsPage() {
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {LIMITS.map((l) => (
               <div key={l.title} className="glass-panel rounded-xl p-5">
-                <h3 className="font-display text-sm font-semibold text-foreground">
-                  {l.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {l.body}
-                </p>
+                <h3 className="font-display text-sm font-semibold text-foreground">{l.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{l.body}</p>
               </div>
             ))}
           </div>
@@ -189,9 +199,7 @@ function MethodsPage() {
                 key={term}
                 className="grid gap-1 border-b border-hairline py-3 first:pt-0 last:border-0 last:pb-0 sm:grid-cols-[200px_1fr] sm:gap-6"
               >
-                <dt className="font-display text-sm font-semibold text-foreground">
-                  {term}
-                </dt>
+                <dt className="font-display text-sm font-semibold text-foreground">{term}</dt>
                 <dd className="text-sm leading-relaxed text-muted-foreground">{def}</dd>
               </div>
             ))}
@@ -200,8 +208,8 @@ function MethodsPage() {
 
         <div className="mt-14 flex flex-wrap items-center gap-4 rounded-xl border border-dashed border-input bg-primary/5 p-6">
           <p className="flex-1 text-sm text-muted-foreground">
-            Ready to work the geometry yourself? Open the interactive model and scrub a
-            full lunation.
+            Ready to work the geometry yourself? Open the interactive model and scrub a full
+            lunation.
           </p>
           <Link
             to="/models"

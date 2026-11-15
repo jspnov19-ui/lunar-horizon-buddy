@@ -5,10 +5,10 @@ import { SkyDome } from "@/components/SkyDome";
 import { ElevationChart } from "@/components/ElevationChart";
 import { TimelineStrip } from "@/components/TimelineStrip";
 import { SITES } from "@/lib/sites";
-import { LunarTools } from '@/components/LunarTools';
-import { MissionSummary } from '@/components/MissionSummary';
-import { TermHelp } from '@/components/TermHelp';
-import { rankSites } from '@/lib/planning';
+import { LunarTools } from "@/components/LunarTools";
+import { MissionSummary } from "@/components/MissionSummary";
+import { TermHelp } from "@/components/TermHelp";
+import { rankSites } from "@/lib/planning";
 import {
   formatDate,
   formatDuration,
@@ -59,23 +59,31 @@ function ModelsPage() {
   const startMs = useMemo(() => Date.parse(`${startDate}T00:00:00Z`), [startDate]);
 
   const primary = useMemo(
-    () => sampleSite(SITES.find((s) => s.id === primaryId)!, startMs, days, STEPS),
+    () =>
+      sampleSite(
+        SITES.find((s) => s.id === primaryId)!,
+        startMs,
+        days,
+        STEPS,
+      ),
     [primaryId, startMs, days],
   );
   const compare = useMemo(
     () =>
       compareId
-        ? sampleSite(SITES.find((s) => s.id === compareId)!, startMs, days, STEPS)
+        ? sampleSite(
+            SITES.find((s) => s.id === compareId)!,
+            startMs,
+            days,
+            STEPS,
+          )
         : null,
     [compareId, startMs, days],
   );
 
   useEffect(() => {
     if (!playing) return;
-    const id = window.setInterval(
-      () => setIndex((i) => (i >= STEPS ? 0 : i + speed)),
-      40,
-    );
+    const id = window.setInterval(() => setIndex((i) => (i >= STEPS ? 0 : i + speed)), 40);
     return () => window.clearInterval(id);
   }, [playing, speed]);
 
@@ -85,8 +93,14 @@ function ModelsPage() {
 
   return (
     <div className="grid-texture min-h-[calc(100vh-4rem)] bg-background p-4 md:p-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">Advanced models</h1><LunarTools site={primary.site} startMs={startMs} days={days} /></div>
-      <MissionSummary analysis={primary} alternatives={rankSites(compare ? [primary, compare] : [primary], 'balanced')} />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Advanced models</h1>
+        <LunarTools site={primary.site} startMs={startMs} days={days} />
+      </div>
+      <MissionSummary
+        analysis={primary}
+        alternatives={rankSites(compare ? [primary, compare] : [primary], "balanced")}
+      />
       <div className="glass-panel relative flex flex-col overflow-hidden rounded-xl shadow-[var(--shadow-panel)]">
         {/* Control strip */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border bg-background/60 px-4 py-3 font-mono text-[11px]">
@@ -116,9 +130,7 @@ function ModelsPage() {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-4 text-muted-foreground">
-            <span>
-              EPOCH J2000 · COORD SYS SELENOGRAPHIC
-            </span>
+            <span>EPOCH J2000 · COORD SYS SELENOGRAPHIC</span>
             <span className="rounded-md border border-hairline bg-shadow px-2 py-1 text-foreground">
               {formatUTC(cursorT)} UTC
             </span>
@@ -170,9 +182,8 @@ function ModelsPage() {
                         </span>
                       </div>
                       <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-                        {Math.abs(site.lat).toFixed(2)}°S,{" "}
-                        {Math.abs(site.lon).toFixed(1)}°{site.lon < 0 ? "W" : "E"} ·{" "}
-                        {site.elevation.toLocaleString()} m
+                        {Math.abs(site.lat).toFixed(2)}°S, {Math.abs(site.lon).toFixed(1)}°
+                        {site.lon < 0 ? "W" : "E"} · {site.elevation.toLocaleString()} m
                       </div>
                     </button>
                     {!isPrimary && (
@@ -267,9 +278,7 @@ function ModelsPage() {
                   <div className="flex flex-col gap-2 text-xs">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Selected A</span>
-                      <span className="font-mono text-foreground">
-                        {primary.site.name}
-                      </span>
+                      <span className="font-mono text-foreground">{primary.site.name}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Target B</span>
@@ -403,7 +412,9 @@ function MetricCard({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card/60 p-4 backdrop-blur-md">
-      <div className="label-caps text-muted-foreground"><TermHelp term={label} /></div>
+      <div className="label-caps text-muted-foreground">
+        <TermHelp term={label} />
+      </div>
       <div className="mt-1 font-display text-3xl font-bold leading-none text-foreground">
         {value}
         <span className="text-lg text-muted-foreground">{unit}</span>
@@ -429,7 +440,9 @@ function SmallStat({
 }) {
   return (
     <div className="rounded-xl border border-hairline bg-card/40 p-3">
-      <div className="label-caps text-muted-foreground"><TermHelp term={label} /></div>
+      <div className="label-caps text-muted-foreground">
+        <TermHelp term={label} />
+      </div>
       <div
         className={`mt-1 font-mono text-lg font-bold ${
           tone === "sun" ? "text-sun" : tone === "earth" ? "text-earth" : "text-foreground"

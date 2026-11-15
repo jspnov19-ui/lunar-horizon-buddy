@@ -12,8 +12,7 @@ const schema = z.object({
 });
 
 export type HorizonsResult =
-  | { ok: true; rows: HorizonsRow[]; fetchedAt: number }
-  | { ok: false; error: string };
+  { ok: true; rows: HorizonsRow[]; fetchedAt: number } | { ok: false; error: string };
 
 const TTL_MS = 10 * 60 * 1000;
 const cache = new Map<string, { at: number; value: HorizonsResult }>();
@@ -31,13 +30,24 @@ export const fetchHorizons = createServerFn({ method: "POST" })
 
     let value: HorizonsResult;
     try {
-      const url = horizonsUrl({ lat: data.lat, lon: data.lon }, data.startMs, data.days, data.body, 0);
+      const url = horizonsUrl(
+        { lat: data.lat, lon: data.lon },
+        data.startMs,
+        data.days,
+        data.body,
+        0,
+      );
       const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
       const text = await res.text();
       const rows = res.ok ? parseHorizonsTable(text) : [];
       value = rows.length
         ? { ok: true, rows, fetchedAt: Date.now() }
-        : { ok: false, error: res.ok ? `NASA Horizons: ${horizonsError(text)}` : `NASA Horizons returned HTTP ${res.status}.` };
+        : {
+            ok: false,
+            error: res.ok
+              ? `NASA Horizons: ${horizonsError(text)}`
+              : `NASA Horizons returned HTTP ${res.status}.`,
+          };
     } catch {
       value = { ok: false, error: "Could not reach NASA Horizons (timeout or network error)." };
     }

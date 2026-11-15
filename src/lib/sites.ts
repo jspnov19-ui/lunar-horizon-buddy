@@ -96,7 +96,7 @@ export const SITES: LandingSite[] = [
     lat: -87.2,
     lon: 84.0,
     elevation: 1330,
-    horizon: [2.9, 2.3, 1.8, 1.5, 1.7, 2.5, 3.6, 4.2, 3.7, 3.2, 3.0, 2.9,],
+    horizon: [2.9, 2.3, 1.8, 1.5, 1.7, 2.5, 3.6, 4.2, 3.7, 3.2, 3.0, 2.9],
     notes: "Rim site with direct traverse access into a permanently shadowed crater floor.",
   },
 ];

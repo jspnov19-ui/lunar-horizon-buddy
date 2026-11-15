@@ -10,16 +10,28 @@ export interface HorizonsRow {
 }
 
 const MONTHS: Record<string, number> = {
-  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  May: 4,
+  Jun: 5,
+  Jul: 6,
+  Aug: 7,
+  Sep: 8,
+  Oct: 9,
+  Nov: 10,
+  Dec: 11,
 };
 
 export function parseHorizonsDate(text: string): number {
   const m = text.trim().match(/^(\d{4})-([A-Za-z]{3})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
   if (!m) return NaN;
-  const month = MONTHS[m[2]];
+  const [, year, monthName, day, hour, minute, second] = m;
+  if (!year || !monthName || !day || !hour || !minute) return NaN;
+  const month = MONTHS[monthName];
   if (month === undefined) return NaN;
-  return Date.UTC(+m[1], month, +m[3], +m[4], +m[5], m[6] ? +m[6] : 0);
+  return Date.UTC(+year, month, +day, +hour, +minute, second ? +second : 0);
 }
 
 /**
@@ -37,10 +49,13 @@ export function parseHorizonsTable(text: string): HorizonsRow[] {
     if (!line.trim()) continue;
     const f = line.split(",").map((s) => s.trim());
     while (f.length && f[f.length - 1] === "") f.pop();
-    if (f.length < 4) continue;
+    if (f.length < 4 || !f[0]) continue;
     const t = parseHorizonsDate(f[0]);
-    const az = Number(f[f.length - 3]);
-    const el = Number(f[f.length - 2]);
+    const azValue = f[f.length - 3];
+    const elValue = f[f.length - 2];
+    if (azValue === undefined || elValue === undefined) continue;
+    const az = Number(azValue);
+    const el = Number(elValue);
     if (!Number.isFinite(t) || !Number.isFinite(az) || !Number.isFinite(el)) continue;
     rows.push({ t, az, el });
   }

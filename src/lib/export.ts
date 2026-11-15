@@ -12,7 +12,7 @@ function download(filename: string, mime: string, body: string) {
 
 function csvCell(value: string | number) {
   const text = String(value);
-  const safe = /^[=+@\-]/.test(text) && typeof value === 'string' ? "'" + text : text;
+  const safe = /^[=+@-]/.test(text) && typeof value === "string" ? "'" + text : text;
   return /[",\r\n]/.test(safe) ? '"' + safe.replaceAll('"', '""') + '"' : safe;
 }
 
@@ -144,13 +144,6 @@ export function exportTimeseriesCsv(analyses: SiteAnalysis[], stamp: string) {
   download(`site-timeseries-${stamp}.csv`, "text/csv", timeseriesCsv(analyses));
 }
 
-export function exportReportJson(
-  analyses: SiteAnalysis[],
-  meta: { start: string; days: number },
-) {
-  download(
-    `mission-windows-${meta.start}.json`,
-    "application/json",
-    reportJson(analyses, meta),
-  );
+export function exportReportJson(analyses: SiteAnalysis[], meta: { start: string; days: number }) {
+  download(`mission-windows-${meta.start}.json`, "application/json", reportJson(analyses, meta));
 }

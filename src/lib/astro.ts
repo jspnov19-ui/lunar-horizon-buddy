@@ -30,11 +30,9 @@ type Vec3 = [number, number, number];
 function sunVector(T: number): Vec3 {
   const L0 = 280.46646 + 36000.76983 * T;
   const M = 357.52911 + 35999.05029 * T;
-  const C =
-    1.914602 * sin(M) + 0.019993 * sin(2 * M) + 0.000289 * sin(3 * M);
+  const C = 1.914602 * sin(M) + 0.019993 * sin(2 * M) + 0.000289 * sin(3 * M);
   const lambda = L0 + C;
-  const R =
-    (1.000014 - 0.016708 * cos(M) - 0.000139 * cos(2 * M)) * 149597870.7;
+  const R = (1.000014 - 0.016708 * cos(M) - 0.000139 * cos(2 * M)) * 149597870.7;
   return [R * cos(lambda), R * sin(lambda), 0];
 }
 
@@ -107,15 +105,11 @@ function selenographic(lambda: number, beta: number, F: number, omega: number) {
   const W = (lambda - omega) * DEG;
   const b = beta * DEG;
   const X = Math.sin(W) * Math.cos(b);
-  const Y =
-    Math.cos(W) * Math.cos(b) * Math.cos(I_MOON) -
-    Math.sin(b) * Math.sin(I_MOON);
+  const Y = Math.cos(W) * Math.cos(b) * Math.cos(I_MOON) - Math.sin(b) * Math.sin(I_MOON);
   const A = Math.atan2(X, Y) * RAD;
   let lon = A - F;
   lon = ((((lon + 180) % 360) + 360) % 360) - 180;
-  const latSin =
-    -Math.sin(W) * Math.cos(b) * Math.sin(I_MOON) -
-    Math.sin(b) * Math.cos(I_MOON);
+  const latSin = -Math.sin(W) * Math.cos(b) * Math.sin(I_MOON) - Math.sin(b) * Math.cos(I_MOON);
   const lat = Math.asin(Math.max(-1, Math.min(1, latSin))) * RAD;
   return { lon, lat };
 }
@@ -147,13 +141,7 @@ const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
  * (instead of the Moon's centre) adds parallax, which is ~0.26 deg for Earth,
  * about the same size as the terrain horizons used here.
  */
-function altAz(
-  subLon: number,
-  subLat: number,
-  rangeKm: number,
-  siteLon: number,
-  siteLat: number,
-) {
+function altAz(subLon: number, subLat: number, rangeKm: number, siteLon: number, siteLat: number) {
   const sl = siteLat * DEG;
   const sn = siteLon * DEG;
   const up: Vec3 = [Math.cos(sl) * Math.cos(sn), Math.cos(sl) * Math.sin(sn), Math.sin(sl)];
@@ -176,11 +164,7 @@ function altAz(
   return { alt, az: (az + 360) % 360 };
 }
 
-export function computeHorizon(
-  date: Date,
-  siteLat: number,
-  siteLon: number,
-): HorizonSample {
+export function computeHorizon(date: Date, siteLat: number, siteLon: number): HorizonSample {
   const T = (julianDay(date) - 2451545) / 36525;
   const moon = moonVector(T);
   const sunV = sunVector(T);
@@ -214,7 +198,7 @@ export function computeHorizon(
  */
 export function horizonAt(profile: number[], azimuth: number): number {
   const n = profile.length;
-  const x = ((azimuth % 360) + 360) % 360 / (360 / n);
+  const x = (((azimuth % 360) + 360) % 360) / (360 / n);
   const i = Math.floor(x) % n;
   const j = (i + 1) % n;
   const f = x - Math.floor(x);

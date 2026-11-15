@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { SkyDome } from "@/components/SkyDome";
 import { SITES } from "@/lib/sites";
 import { formatDuration, formatUTC, sampleSite } from "@/lib/analysis";
-import { LunarTools } from '@/components/LunarTools';
+import { LunarTools } from "@/components/LunarTools";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
@@ -51,7 +51,13 @@ function HowItWorksPage() {
 
   const startMs = useMemo(() => Date.parse("2026-03-01T00:00:00Z"), []);
   const demo = useMemo(
-    () => sampleSite(SITES.find((s) => s.id === siteId)!, startMs, 29.53, DEMO_STEPS),
+    () =>
+      sampleSite(
+        SITES.find((s) => s.id === siteId)!,
+        startMs,
+        29.53,
+        DEMO_STEPS,
+      ),
     [siteId, startMs],
   );
   const cur = demo.samples[index];
@@ -64,9 +70,8 @@ function HowItWorksPage() {
           Two questions decide a landing site
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-          Can the lander make power, and can it talk to Earth? Everything on
-          this site is an answer to those two questions for a specific place and
-          a specific set of dates.
+          Can the lander make power, and can it talk to Earth? Everything on this site is an answer
+          to those two questions for a specific place and a specific set of dates.
         </p>
       </header>
 
@@ -74,9 +79,7 @@ function HowItWorksPage() {
         {IDEAS.map((i) => (
           <article key={i.title} className="glass-panel rounded-lg p-5">
             <h2 className="text-base font-semibold">{i.title}</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {i.body}
-            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{i.body}</p>
           </article>
         ))}
       </section>
@@ -84,10 +87,10 @@ function HowItWorksPage() {
       <section className="mt-12 border-t border-hairline pt-10">
         <h2 className="text-2xl font-bold">Try it</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          This is one month at a real candidate site. The circle is the sky seen
-          from the ground: the centre is straight up, the edge is the horizon,
-          and the shaded band around the rim is the surrounding terrain. Drag the
-          slider and watch the Sun and Earth circle the rim, dipping behind hills.
+          This is one month at a real candidate site. The circle is the sky seen from the ground:
+          the centre is straight up, the edge is the horizon, and the shaded band around the rim is
+          the surrounding terrain. Drag the slider and watch the Sun and Earth circle the rim,
+          dipping behind hills.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2">
@@ -142,15 +145,11 @@ function HowItWorksPage() {
               />
               <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
                 Across this month {demo.site.name} is lit{" "}
-                <span className="text-sun">
-                  {(demo.illumination * 100).toFixed(0)}%
-                </span>{" "}
-                of the time, with a longest dark stretch of{" "}
-                {formatDuration(demo.longestDarkHours)}, and Earth is in view{" "}
-                <span className="text-earth">
-                  {(demo.earthVisibility * 100).toFixed(0)}%
-                </span>{" "}
-                of the time.
+                <span className="text-sun">{(demo.illumination * 100).toFixed(0)}%</span> of the
+                time, with a longest dark stretch of {formatDuration(demo.longestDarkHours)}, and
+                Earth is in view{" "}
+                <span className="text-earth">{(demo.earthVisibility * 100).toFixed(0)}%</span> of
+                the time.
               </p>
             </div>
           </div>
@@ -159,7 +158,12 @@ function HowItWorksPage() {
 
       <section className="mt-12 border-t border-hairline pt-10">
         <h2 className="text-2xl font-bold">From screening to real lunar data</h2>
-        <p className="mb-5 mt-3 text-sm leading-relaxed text-muted-foreground">Start with a comparison here, inspect the landscape in ASU’s LROC QuickMap and NASA Moon Trek, then check Sun and Earth positions in JPL Horizons. These external tools do not replace the illustrative terrain or approximate positions in this app automatically. A terrain map alone is not a surveyed horizon profile.</p>
+        <p className="mb-5 mt-3 text-sm leading-relaxed text-muted-foreground">
+          Start with a comparison here, inspect the landscape in ASU’s LROC QuickMap and NASA Moon
+          Trek, then check Sun and Earth positions in JPL Horizons. These external tools do not
+          replace the illustrative terrain or approximate positions in this app automatically. A
+          terrain map alone is not a surveyed horizon profile.
+        </p>
         <LunarTools site={demo.site} startMs={startMs} days={29.53} />
       </section>
       <section className="mt-12 border-t border-hairline pt-10">
@@ -194,9 +198,8 @@ function HowItWorksPage() {
           </Link>
         </div>
         <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          One caveat worth knowing: the terrain profiles here are illustrative
-          rather than surveyed, so treat the results as planning-grade
-          comparisons between sites, not as flight data.
+          One caveat worth knowing: the terrain profiles here are illustrative rather than surveyed,
+          so treat the results as planning-grade comparisons between sites, not as flight data.
         </p>
       </section>
     </main>
@@ -217,16 +220,8 @@ function StatusLine({
   const color = tone === "sun" ? "bg-sun" : "bg-earth";
   return (
     <div className="flex items-start gap-3">
-      <span
-        className={`mt-1.5 size-2.5 shrink-0 rounded-full ${
-          ok ? color : "bg-muted"
-        }`}
-      />
-      <p
-        className={`text-sm leading-relaxed ${
-          ok ? "text-foreground" : "text-muted-foreground"
-        }`}
-      >
+      <span className={`mt-1.5 size-2.5 shrink-0 rounded-full ${ok ? color : "bg-muted"}`} />
+      <p className={`text-sm leading-relaxed ${ok ? "text-foreground" : "text-muted-foreground"}`}>
         {ok ? okText : badText}
       </p>
     </div>

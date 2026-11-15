@@ -81,8 +81,7 @@ export function sampleSite(
     longestDarkHours: longest(darkIntervals) / 3600000,
     longestGapHours: longest(gapIntervals) / 3600000,
     maxSunAlt: Math.max(...samples.map((s) => s.sunAlt)),
-    meanEarthAlt:
-      samples.reduce((a, s) => a + s.earthAlt, 0) / samples.length,
+    meanEarthAlt: samples.reduce((a, s) => a + s.earthAlt, 0) / samples.length,
     sunlitIntervals,
     earthIntervals,
   };
