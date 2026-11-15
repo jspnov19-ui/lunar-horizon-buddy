@@ -43,7 +43,7 @@ const PIPELINE = [
   {
     step: "04",
     title: "Horizon masking",
-    body: "A 12-sector terrain elevation profile is interpolated at the body's azimuth. A body counts as visible when its centre altitude plus its apparent angular radius clears that local terrain elevation.",
+    body: "In the planner, a local skyline is derived from the 240 m NASA LRO LOLA elevation patch for each built-in site, then represented in 72 azimuth sectors. The profile is interpolated at the body's azimuth. A body counts as visible when its centre altitude plus apparent angular radius clears that skyline. Custom sites use the explicitly entered constant horizon.",
   },
   {
     step: "05",
@@ -65,11 +65,11 @@ const GLOSSARY = [
 const LIMITS = [
   {
     title: "Directional accuracy",
-    body: "Observer parallax is included. Accuracy has not been independently validated here; use the in-app Compare with NASA Horizons panel to measure the actual error. The comparison reports mean and maximum elevation differences for the selected window.",
+    body: "Observer parallax is included. Accuracy has not been independently validated here; use the JPL Horizons comparison in the Data Lab to measure the actual difference. The comparison reports mean and maximum elevation differences for the selected window.",
   },
   {
-    title: "Illustrative terrain",
-    body: "The 12-sector horizon profiles are representative of each region's character, not surveyed LOLA topography. Absolute uptime percentages will shift with real elevation models.",
+    title: "Terrain resolution and coverage",
+    body: "Planner skylines are derived from 240 m LOLA samples in a 15.36 km local patch. This misses smaller rocks, lander structure, pad-scale slopes and terrain beyond the patch. The separate orbital and tutorial views may still use illustrative masks; custom sites never imply surveyed terrain.",
   },
   {
     title: "No refraction or scattering",

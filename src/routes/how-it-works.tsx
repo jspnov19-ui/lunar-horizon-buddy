@@ -155,7 +155,7 @@ function HowItWorksPage() {
 
       <section className="mt-12 border-t border-hairline pt-10">
         <h2 className="text-2xl font-bold">From screening to real lunar data</h2>
-        <p className="mb-5 mt-3 text-sm leading-relaxed text-muted-foreground">Start with a comparison here, inspect the landscape in ASU’s LROC QuickMap and NASA Moon Trek, then check Sun and Earth positions in JPL Horizons. These external tools do not replace the illustrative terrain or approximate positions in this app automatically. A terrain map alone is not a surveyed horizon profile.</p>
+        <p className="mb-5 mt-3 text-sm leading-relaxed text-muted-foreground">Start with a comparison here, inspect the landscape in ASU’s LROC QuickMap and NASA Moon Trek, then check Sun and Earth positions in JPL Horizons. These references do not automatically replace app calculations. Planner skylines use bundled LOLA patches for built-in sites, while positions remain approximate; the DEM is not a surveyed lander-pad profile.</p>
         <LunarTools site={demo.site} startMs={startMs} days={29.53} />
       </section>
       <section className="mt-12 border-t border-hairline pt-10">
@@ -190,9 +190,11 @@ function HowItWorksPage() {
           </Link>
         </div>
         <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
-          One caveat worth knowing: the terrain profiles here are illustrative
-          rather than surveyed, so treat the results as planning-grade
-          comparisons between sites, not as flight data.
+          In the planner, built-in site horizons are derived from NASA LRO LOLA
+          elevation patches at 240 m grid spacing; custom sites use the declared
+          constant horizon. These DEM-scale skylines miss small obstacles and
+          are not surveyed lander-pad profiles, so treat results as planning
+          comparisons rather than flight data.
         </p>
       </section>
     </main>

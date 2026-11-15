@@ -211,7 +211,7 @@ export function computeHorizon(
 
 /**
  * Terrain horizon elevation (deg) at a given azimuth, interpolated from a
- * 12-sector profile starting at north and running clockwise.
+ * directional profile starting at north and running clockwise.
  */
 export function horizonAt(profile: number[], azimuth: number): number {
   const n = profile.length;

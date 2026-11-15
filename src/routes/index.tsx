@@ -71,9 +71,9 @@ function LandingPage() {
           <ResourceCard title="3D lunar exploration" source="NASA Moon Trek" text="Explore NASA’s interactive lunar map and available topographic layers from within the site." />
           <ResourceCard title="Ephemeris cross-check" source="JPL Horizons" text="Request Sun and Earth positions for a selected site, then compare them against the app’s predictions." />
         </div>
-        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">These tools open separately and do not automatically update the planner. This app’s visibility estimates use an approximate ephemeris and illustrative horizon masks; NASA terrain layers are for inspection and are not currently used to calculate planner rankings.</p>
+        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">These NASA and JPL tools open separately and do not automatically replace app calculations. The planner uses its approximate ephemeris with local skylines derived from NASA LRO LOLA 240 m terrain patches for built-in sites; JPL Horizons remains a separate ephemeris cross-check.</p>
       </section>
-      <p className="mt-7 max-w-4xl border-l-2 border-primary/40 pl-4 text-xs leading-relaxed text-muted-foreground">These are preliminary estimates, not flight-design results. Sun and Earth visibility calculations use an approximate ephemeris and illustrative horizon masks; the LOLA terrain previews are not currently used by those calculations. Visibility alone does not establish electrical output or a complete radio link.</p>
+      <p className="mt-7 max-w-4xl border-l-2 border-primary/40 pl-4 text-xs leading-relaxed text-muted-foreground">These are preliminary estimates, not flight-design results. Planner horizons come from 240 m LOLA patches when available, while custom sites use a declared constant horizon. Visibility alone does not establish electrical output or a complete radio link.</p>
     </section>
   </main>;
 }

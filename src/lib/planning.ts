@@ -5,10 +5,12 @@ export const PRIORITY_WEIGHTS = { power: 0.75, balanced: 0.5, comms: 0.25 };
 export type Priority = keyof typeof PRIORITY_WEIGHTS;
 
 export function rankSites(analyses: SiteAnalysis[], priority: Priority) {
-  const weight = PRIORITY_WEIGHTS[priority];
-  return [...analyses].sort((a, b) =>
-    (weight * b.illumination + (1 - weight) * b.earthVisibility) -
-    (weight * a.illumination + (1 - weight) * a.earthVisibility));
+  return [...analyses].sort((a, b) => weightedScore(b, priority) - weightedScore(a, priority));
+}
+
+export function weightedScore(analysis: SiteAnalysis, priority: Priority) {
+  const sunWeight = PRIORITY_WEIGHTS[priority];
+  return sunWeight * analysis.illumination + (1 - sunWeight) * analysis.earthVisibility;
 }
 
 export function customSite(name: string, lat: number, lon: number, horizon: number): LandingSite {

@@ -22,6 +22,7 @@ export interface Interval {
 
 export interface SiteAnalysis {
   site: LandingSite;
+  horizonSource: 'lola-dem' | 'illustrative' | 'custom';
   samples: Sample[];
   stepMs: number;
   illumination: number; // 0..1
@@ -39,6 +40,7 @@ export function sampleSite(
   startMs: number,
   days: number,
   steps = 720,
+  horizonSource: SiteAnalysis['horizonSource'] = site.id.startsWith('custom-') ? 'custom' : 'illustrative',
 ): SiteAnalysis {
   const spanMs = days * 86400000;
   const stepMs = spanMs / steps;
@@ -74,6 +76,7 @@ export function sampleSite(
 
   return {
     site,
+    horizonSource,
     samples,
     stepMs,
     illumination: lit,

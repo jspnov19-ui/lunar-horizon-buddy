@@ -1,15 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2, Mountain, Share2, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TimelineStrip } from '@/components/TimelineStrip';
 import { PolarMap } from '@/components/PolarMap';
 import { SITES, type LandingSite } from '@/lib/sites';
 import { formatDuration, formatUTC, sampleSite, type SiteAnalysis } from '@/lib/analysis';
-import { customSite, nextTransition, rankSites, type Priority } from '@/lib/planning';
-import { exportReportJson, exportSummaryCsv, exportTimeseriesCsv } from '@/lib/export';
+import { customSite, nextTransition, rankSites, weightedScore, PRIORITY_WEIGHTS, type Priority } from '@/lib/planning';
+import { exportMissionBrief, exportReportJson, exportSummaryCsv, exportTimeseriesCsv } from '@/lib/export';
 import { MissionSummary } from '@/components/MissionSummary';
 import { TermHelp } from '@/components/TermHelp';
+import { loadLolaHorizonProfiles } from '@/lib/lola-horizon';
 
 export const Route = createFileRoute('/planner')({
   head: () => ({ meta: [
@@ -44,6 +45,8 @@ function PlannerPage() {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState('');
+  const [terrainProfiles, setTerrainProfiles] = useState<Record<string, number[]> | null>(null);
+  const [terrainStatus, setTerrainStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [name, setName] = useState('');
   const [lat, setLat] = useState('-89');
   const [lon, setLon] = useState('0');
@@ -51,15 +54,20 @@ function PlannerPage() {
   const startMs = Date.parse(`${start}:00Z`);
   const altMs = Date.parse(`${alternate}:00Z`);
   const valid = Number.isFinite(startMs);
-  const ranked = useMemo(() => valid ? rankSites(sites.filter(s => selected.includes(s.id)).map(s => sampleSite(s, startMs, days, STEPS)), priority) : [], [sites, selected, startMs, days, priority, valid]);
-  const alternateRanked = useMemo(() => compare && Number.isFinite(altMs) ? rankSites(sites.filter(s => selected.includes(s.id)).map(s => sampleSite(s, altMs, days, STEPS)), priority) : [], [sites, selected, compare, altMs, days, priority]);
+  const analyze = useCallback((site: LandingSite, at: number) => {
+    const profile = terrainProfiles?.[site.id];
+    const source = profile ? 'lola-dem' : site.id.startsWith('custom-') ? 'custom' : 'illustrative';
+    return sampleSite(profile ? { ...site, horizon: profile } : site, at, days, STEPS, source);
+  }, [terrainProfiles, days]);
+  const ranked = useMemo(() => valid ? rankSites(sites.filter(s => selected.includes(s.id)).map(s => analyze(s, startMs)), priority) : [], [sites, selected, startMs, priority, valid, analyze]);
+  const alternateRanked = useMemo(() => compare && Number.isFinite(altMs) ? rankSites(sites.filter(s => selected.includes(s.id)).map(s => analyze(s, altMs)), priority) : [], [sites, selected, compare, altMs, priority, analyze]);
   const detail = ranked.find(a => a.site.id === detailId) ?? ranked[0];
   const altDetail = alternateRanked.find(a => a.site.id === detail?.site.id);
   const best = ranked[0];
   const comparePrimary = sites.find(site => site.id === comparePrimaryId);
   const compareSecondary = sites.find(site => site.id === compareSecondaryId);
-  const comparePrimaryAnalysis = useMemo(() => valid && comparePrimary ? sampleSite(comparePrimary, startMs, days, STEPS) : null, [valid, comparePrimary, startMs, days]);
-  const compareSecondaryAnalysis = useMemo(() => valid && compareSecondary ? sampleSite(compareSecondary, startMs, days, STEPS) : null, [valid, compareSecondary, startMs, days]);
+  const comparePrimaryAnalysis = useMemo(() => valid && comparePrimary ? analyze(comparePrimary, startMs) : null, [valid, comparePrimary, startMs, analyze]);
+  const compareSecondaryAnalysis = useMemo(() => valid && compareSecondary ? analyze(compareSecondary, startMs) : null, [valid, compareSecondary, startMs, analyze]);
   const all = [...ranked, ...alternateRanked];
   const simulatorHref = detail
     ? detail.site.id.startsWith('custom-')
@@ -67,8 +75,13 @@ function PlannerPage() {
       : `/simulator?site=${encodeURIComponent(detail.site.id)}`
     : '/simulator';
   useEffect(() => {
+    let active = true;
+    loadLolaHorizonProfiles().then(profiles => { if (active) { setTerrainProfiles(profiles); setTerrainStatus('ready'); } }).catch(() => { if (active) setTerrainStatus('error'); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
     if (!playing) return;
-    const timer = window.setInterval(() => setIndex(i => (i + 1) % (STEPS + 1)), 100);
+    const timer = window.setInterval(() => setIndex(i => i >= STEPS ? 0 : i + 1), 180);
     return () => window.clearInterval(timer);
   }, [playing]);
 
@@ -103,7 +116,7 @@ function PlannerPage() {
           <div className="mb-3 flex justify-between text-xs text-muted-foreground"><span>{selected.length} of {sites.length} included in the comparison</span><Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelected(selected.length === sites.length ? [] : sites.map(s => s.id))}>{selected.length === sites.length ? 'Clear' : 'Select all'}</Button></div>
           <div className="max-h-[430px] space-y-1 overflow-auto pr-1">{sites.map((s, i) => <label key={s.id} className={`site-choice flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-xs leading-relaxed ${detail?.site.id === s.id ? 'site-choice-active' : 'border-transparent hover:border-white/10 hover:bg-white/[0.035]'}`}><input type="checkbox" className="accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span className="site-terrain-chip" style={{ filter: `hue-rotate(${i * 41}deg)` }} aria-hidden="true"/><span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-medium text-foreground"><span className="font-mono text-[10px] text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>{s.name}</span><span className="mt-1 block pl-7 font-mono text-[10px] text-muted-foreground">{Math.abs(s.lat).toFixed(2)}°{s.lat < 0 ? 'S' : 'N'} · {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? 'W' : 'E'}</span></span><span className="site-focus-tag">{detail?.site.id === s.id ? 'FOCUS' : ''}</span></label>)}</div>
           {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
-          <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/15 p-3"><p className="text-[10px] font-semibold uppercase tracking-wider text-white/65">Horizon assumptions</p><p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">Custom sites use a declared flat 0° horizon. Built-in site terrain masks are illustrative.</p></div>
+          <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/15 p-3"><p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/65">{terrainStatus === 'loading' ? <LoaderCircle className="size-3 animate-spin"/> : <Mountain className="size-3 text-primary"/>}Horizon assumptions</p><p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">{terrainStatus === 'ready' ? 'Built-in sites use local skylines derived from NASA LRO LOLA terrain (240 m grid). Custom sites use their declared constant horizon.' : terrainStatus === 'loading' ? 'Loading LOLA elevation patches; built-in site estimates will switch to them when ready. Custom sites retain their declared horizon.' : 'LOLA patches could not load. Built-in estimates use illustrative masks; custom sites use their declared constant horizon.'}</p></div>
         </div>
       </div>
     </section>
@@ -130,13 +143,15 @@ function PlannerPage() {
         </div>
 
         <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[560px] text-left text-sm"><thead className="border-b border-border text-xs text-muted-foreground"><tr><th className="py-3">Landing site</th><th><TermHelp term="Sunlight" /></th><th><TermHelp term="Earth link" /></th><th><TermHelp term="Longest dark" /></th><th><TermHelp term="Link gap" /></th></tr></thead><tbody>{ranked.map((a, i) => <tr key={a.site.id} className={`border-b border-hairline transition-colors ${detail.site.id === a.site.id ? 'bg-primary/8' : 'hover:bg-secondary/60'}`}><td className="py-3 pr-3"><Button variant="link" className="h-auto max-w-[240px] justify-start whitespace-normal p-0 text-left text-foreground" onClick={() => pickSite(a.site.id)} aria-pressed={detail.site.id === a.site.id}><span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>{a.site.name}</Button></td><td className="font-mono text-sun">{(a.illumination * 100).toFixed(0)}%</td><td className="font-mono text-earth">{(a.earthVisibility * 100).toFixed(0)}%</td><td className="font-mono text-xs">{formatDuration(a.longestDarkHours)}</td><td className="font-mono text-xs">{formatDuration(a.longestGapHours)}</td></tr>)}</tbody></table></div>
-        <p className="mt-3 border-l-2 border-primary pl-3 text-xs leading-relaxed text-muted-foreground">Screening estimates, not flight-certified. Built-in terrain masks are illustrative. Rankings measure visibility, not electrical output or link margin.</p>
+        <p className="mt-3 border-l-2 border-primary pl-3 text-xs leading-relaxed text-muted-foreground">Screening estimates, not flight-certified. When loaded, built-in site skylines come from NASA LRO LOLA elevation patches; custom horizons are user-declared. Rankings measure visibility, not electrical output or link margin.</p>
 
         <div className="mt-8"><MissionSummary analysis={detail} alternatives={ranked} /></div>
+        <RankingBreakdown analysis={detail} rank={ranked.findIndex(a => a.site.id === detail.site.id) + 1} total={ranked.length} priority={priority} />
+        <TerrainSkyline analysis={detail} index={index} terrainStatus={terrainStatus} />
 
-        <section className="site-compare mt-8" aria-labelledby="site-compare-title"><div className="site-compare-heading"><div><p className="label-caps text-primary">Side-by-side study</p><h2 id="site-compare-title" className="mt-2 text-xl font-semibold md:text-2xl">Compare two landing sites</h2><p className="mt-2 text-xs text-muted-foreground">Both sites use the same {days === 29.53 ? 'lunar-cycle' : `${days}-day`} window and ranking priority.</p></div><div className="site-compare-selects"><label>Site A<select value={comparePrimaryId} onChange={event => setComparePrimaryId(event.target.value)} className={FIELD}>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select></label><span className="site-compare-vs">VS</span><label>Site B<select value={compareSecondaryId} onChange={event => setCompareSecondaryId(event.target.value)} className={FIELD}>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select></label></div></div><div className="site-compare-cards">{comparePrimaryAnalysis && <SiteCompareCard analysis={comparePrimaryAnalysis} />}{compareSecondaryAnalysis && <SiteCompareCard analysis={compareSecondaryAnalysis} />}</div></section>
+        <section className="site-compare mt-8" aria-labelledby="site-compare-title"><div className="site-compare-heading"><div><p className="label-caps text-primary">Side-by-side study</p><h2 id="site-compare-title" className="mt-2 text-xl font-semibold md:text-2xl">Compare two landing sites</h2><p className="mt-2 text-xs text-muted-foreground">Same mission dates, shared playback cursor, and matching visibility scales.</p></div><div className="site-compare-selects"><label>Site A<select value={comparePrimaryId} onChange={event => setComparePrimaryId(event.target.value)} className={FIELD}>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select></label><span className="site-compare-vs">VS</span><label>Site B<select value={compareSecondaryId} onChange={event => setCompareSecondaryId(event.target.value)} className={FIELD}>{sites.map(site => <option key={site.id} value={site.id}>{site.name}</option>)}</select></label></div></div><div className="site-compare-cards">{comparePrimaryAnalysis && <SiteCompareCard analysis={comparePrimaryAnalysis} />}{compareSecondaryAnalysis && <SiteCompareCard analysis={compareSecondaryAnalysis} />}</div>{comparePrimaryAnalysis && compareSecondaryAnalysis && <CompareTimeline a={comparePrimaryAnalysis} b={compareSecondaryAnalysis} index={index} onScrub={setIndex} days={days}/>}</section>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p className="label-caps text-primary">Selected location</p><h2 className="mt-2 text-xl font-semibold">{detail.site.name}</h2></div><div className="flex items-center gap-2"><Button size="icon" variant="outline" title="Reset timeline" aria-label="Reset timeline" onClick={() => { setIndex(0); setPlaying(false); }}><RotateCcw /></Button><Button size="icon" title={playing ? 'Pause timeline' : 'Play timeline'} aria-label={playing ? 'Pause timeline' : 'Play timeline'} onClick={() => setPlaying(v => !v)}>{playing ? <Pause /> : <Play />}</Button></div></div>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p className="label-caps text-primary">Mission playback</p><h2 className="mt-2 text-xl font-semibold">Follow one lunar cycle</h2><p className="mt-1 text-xs text-muted-foreground">Scrub or play; readouts and both comparison traces stay synchronized.</p></div><div className="flex items-center gap-2"><Button size="icon" variant="outline" title="Reset timeline" aria-label="Reset timeline" onClick={() => { setIndex(0); setPlaying(false); }}><RotateCcw /></Button><Button size="icon" title={playing ? 'Pause timeline' : 'Play lunar-cycle playback'} aria-label={playing ? 'Pause timeline' : 'Play lunar-cycle playback'} onClick={() => setPlaying(v => !v)}>{playing ? <Pause /> : <Play />}</Button></div></div>
         <div className={`grid gap-6 ${compare ? 'xl:grid-cols-2' : ''}`}><WindowView analysis={detail} index={index} onScrub={setIndex} label="Primary window" />{compare && altDetail && <WindowView analysis={altDetail} index={index} onScrub={setIndex} label="Alternate window" />}</div>
         <input type="range" min={0} max={STEPS} value={index} onChange={e => setIndex(Number(e.target.value))} aria-label="Mission timeline" className="mt-6 w-full accent-primary" />
         <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground"><span>Landing</span><span>{(index / STEPS * days).toFixed(2)} days elapsed</span><span>Mission end</span></div>
@@ -153,7 +168,7 @@ function PlannerPage() {
               <div className="grid grid-cols-2 gap-2"><label className="text-xs">Latitude °<input aria-label="Custom latitude" required type="number" min={-90} max={90} step="any" value={lat} onChange={e => setLat(e.target.value)} className={`${FIELD} mt-1`} /></label><label className="text-xs">Longitude °E<input aria-label="Custom longitude" required type="number" min={-180} max={180} step="any" value={lon} onChange={e => setLon(e.target.value)} className={`${FIELD} mt-1`} /></label></div>
               <label className="block text-xs">Constant horizon °<input aria-label="Custom horizon" required type="number" min={0} max={90} step="any" value={horizon} onChange={e => setHorizon(e.target.value)} className={`${FIELD} mt-1`} /></label>
               <Button type="submit" size="sm"><Plus />Add site</Button></form>
-            <div><h3 className="text-sm font-semibold">Export {compare ? 'both windows' : 'mission data'}</h3><div className="mt-3 flex flex-col items-start gap-2"><Button size="sm" variant="outline" onClick={() => exportSummaryCsv(all, start.slice(0, 10))}><Download />Comparison CSV</Button><Button size="sm" variant="outline" onClick={() => exportTimeseriesCsv(all, start.slice(0, 10))}><Download />Time series CSV</Button><Button size="sm" onClick={() => exportReportJson(all, { start, days })}><Download />Windows JSON</Button></div>
+            <div><h3 className="text-sm font-semibold">Export {compare ? 'both windows' : 'mission data'}</h3><div className="mt-3 flex flex-col items-start gap-2"><Button size="sm" variant="outline" onClick={() => exportSummaryCsv(all, start.slice(0, 10))}><Download />Comparison CSV</Button><Button size="sm" variant="outline" onClick={() => exportTimeseriesCsv(all, start.slice(0, 10))}><Download />Time series CSV</Button><Button size="sm" variant="outline" onClick={() => exportReportJson(all, { start, days })}><Download />Windows JSON</Button><Button size="sm" onClick={() => { if (comparePrimaryAnalysis && compareSecondaryAnalysis) exportMissionBrief([comparePrimaryAnalysis, compareSecondaryAnalysis], { start, days, priority: priority === 'power' ? 'Power - 75% sunlight / 25% Earth' : priority === 'comms' ? 'Earth link - 25% sunlight / 75% Earth' : 'Balanced - 50% sunlight / 50% Earth' }); }}><Share2 />Shareable mission brief</Button></div>
               <Button variant="link" size="sm" asChild className="mt-4 h-auto p-0"><Link to="/how-it-works">How the numbers are made <ArrowRight /></Link></Button></div>
           </div>
         </details>
@@ -162,6 +177,69 @@ function PlannerPage() {
   </main>;
 }
 function delta(value: number) { return `${value >= 0 ? '+' : ''}${(value * 100).toFixed(1)}`; }
+function RankingBreakdown({ analysis, rank, total, priority }: { analysis: SiteAnalysis; rank: number; total: number; priority: Priority }) {
+  const sunWeight = PRIORITY_WEIGHTS[priority], earthWeight = 1 - sunWeight;
+  const sunPoints = analysis.illumination * sunWeight * 100, earthPoints = analysis.earthVisibility * earthWeight * 100;
+  const score = weightedScore(analysis, priority) * 100;
+  return <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.025] p-5" aria-label="Why this site ranked here">
+    <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="label-caps text-primary">Ranking, explained</p><h3 className="mt-1 text-lg font-semibold">Why {analysis.site.name} is #{rank}</h3></div><p className="font-mono text-sm text-primary">{score.toFixed(1)} <span className="text-[10px] text-white/40">/ 100</span><span className="ml-2 text-[10px] text-white/45">of {total}</span></p></div>
+    <div className="mt-4 grid gap-4 md:grid-cols-2"><ScoreBar label={`Sunlight · ${(sunWeight * 100).toFixed(0)}% weight`} value={sunPoints} maximum={sunWeight * 100} tone="sun" metric={`${(analysis.illumination * 100).toFixed(1)}% available`} /><ScoreBar label={`Earth visibility · ${(earthWeight * 100).toFixed(0)}% weight`} value={earthPoints} maximum={earthWeight * 100} tone="earth" metric={`${(analysis.earthVisibility * 100).toFixed(1)}% available`} /></div>
+    <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/[0.08] pt-3 text-[10px] text-white/55"><span>Longest darkness <b className="ml-1 text-foreground">{formatDuration(analysis.longestDarkHours)}</b></span><span>Longest Earth gap <b className="ml-1 text-foreground">{formatDuration(analysis.longestGapHours)}</b></span><span className="text-white/40">Gaps are shown as risk readouts; only weighted sunlight and Earth visibility set the score.</span></div>
+  </section>;
+}
+function ScoreBar({ label, value, maximum, tone, metric }: { label: string; value: number; maximum: number; tone: 'sun' | 'earth'; metric: string }) {
+  return <div><div className="flex justify-between gap-3 text-[10px]"><span>{label}</span><span className={tone === 'sun' ? 'text-sun' : 'text-earth'}>{metric} · {value.toFixed(1)} pts</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"><div className={`h-full rounded-full ${tone === 'sun' ? 'bg-sun' : 'bg-earth'}`} style={{ width: `${maximum > 0 ? value / maximum * 100 : 0}%` }}/></div></div>;
+}
+function TerrainSkyline({ analysis, index, terrainStatus }: { analysis: SiteAnalysis; index: number; terrainStatus: 'loading' | 'ready' | 'error' }) {
+  const sample = analysis.samples[index];
+  if (!sample) return null;
+  const W = 720, H = 206, left = 38, right = 14, top = 16, bottom = 27;
+  const profile = analysis.site.horizon;
+  const plotW = W - left - right, plotH = H - top - bottom, min = -5, max = Math.max(25, Math.ceil(Math.max(...profile) / 5) * 5);
+  const xAt = (az: number) => left + (((az % 360) + 360) % 360) / 360 * plotW;
+  const yAt = (alt: number) => top + (max - Math.max(min, Math.min(max, alt))) / (max - min) * plotH;
+  const pts = profile.map((elevation, i) => `${left + i / profile.length * plotW},${yAt(elevation)}`);
+  const skyline = `M ${pts.join(' L ')} L ${W - right},${yAt(profile[0] ?? 0)}`;
+  const skylineArea = `M ${left},${yAt(min)} L ${pts.join(' L ')} L ${W - right},${yAt(profile[0] ?? 0)} L ${W - right},${yAt(min)} Z`;
+  const bodies = [
+    { label: 'Sun', az: sample.sunAz, alt: sample.sunAlt, radius: sample.sunRadius, h: sample.sunHorizon, color: '#ffc45d', visible: sample.sunUp },
+    { label: 'Earth', az: sample.earthAz, alt: sample.earthAlt, radius: sample.earthRadius, h: sample.earthHorizon, color: '#62cbff', visible: sample.earthUp },
+  ];
+  const source = analysis.horizonSource === 'lola-dem' ? 'NASA LRO LOLA · derived skyline' : analysis.horizonSource === 'custom' ? 'User-declared constant horizon' : 'Illustrative horizon profile';
+  return <section className="mt-8 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1117]" aria-labelledby="terrain-clearance-title">
+    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 px-5 py-4"><div><p className="label-caps flex items-center gap-1.5 text-primary"><Mountain className="size-3.5"/>Terrain meets sky</p><h2 id="terrain-clearance-title" className="mt-1 text-lg font-semibold">Does the skyline block the Sun or Earth?</h2><p className="mt-1 text-[10px] text-muted-foreground">Azimuth around the site vs. apparent altitude at {formatUTC(sample.t)} UTC.</p></div><span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[9px] font-mono text-white/60">{source}</span></div>
+    <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,1.4fr)_minmax(190px,.6fr)] md:p-5"><div className="min-w-0"><svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Horizon elevation profile for ${analysis.site.name}; plotted against current Sun and Earth altitudes`}>
+      {[ -5, 0, Math.round(max / 2), max ].map(value => <g key={value}><line x1={left} x2={W - right} y1={yAt(value)} y2={yAt(value)} stroke={value === 0 ? '#61707a' : '#26333b'} strokeDasharray={value === 0 ? '0' : '3 5'}/><text x={left - 8} y={yAt(value) + 3} textAnchor="end" fill="#788992" fontSize="9">{value}°</text></g>)}
+      {[0, 90, 180, 270, 360].map(value => <text key={value} x={xAt(value)} y={H - 7} textAnchor="middle" fill="#788992" fontSize="9">{value === 0 || value === 360 ? 'N' : value === 90 ? 'E' : value === 180 ? 'S' : 'W'}</text>)}
+      <path d={skylineArea} fill="rgba(255,80,119,.12)" stroke="none"/><path d={skyline} fill="none" stroke="#ff5077" strokeWidth="2" vectorEffect="non-scaling-stroke"/>
+      {bodies.map(body => <g key={body.label}><line x1={xAt(body.az)} x2={xAt(body.az)} y1={yAt(body.h)} y2={yAt(body.alt)} stroke={body.color} strokeWidth="1.5" strokeDasharray="3 3" opacity=".85"/><circle cx={xAt(body.az)} cy={yAt(body.alt)} r="5" fill={body.color} stroke="#080c11" strokeWidth="2"/><text x={xAt(body.az) + 8} y={yAt(body.alt) - 7} fill={body.color} fontSize="10" fontWeight="600">{body.label}</text></g>)}
+    </svg><div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[9px] text-white/50"><span><i className="mr-1 inline-block w-3 border-t-2 border-[#ff5077]"/>terrain skyline</span><span className="text-sun">● Sun apparent center</span><span className="text-earth">● Earth apparent center</span><span>0° line = local horizontal</span></div></div>
+      <div className="grid content-start gap-2">{bodies.map(body => <div key={body.label} className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-3"><p className="flex items-center justify-between text-[10px]" style={{ color: body.color }}><strong>{body.label}</strong><span>{body.visible ? 'CLEARS TERRAIN' : 'BEHIND SKYLINE'}</span></p><p className="mt-2 font-mono text-lg">{body.alt.toFixed(2)}° <span className="text-xs text-white/40">altitude</span></p><p className="mt-1 text-[10px] text-white/50">Skyline {body.h.toFixed(2)}° at azimuth {body.az.toFixed(1)}° · limb margin {(body.alt + body.radius - body.h).toFixed(2)}°</p></div>)}<p className="text-[9px] leading-relaxed text-white/40">{analysis.horizonSource === 'lola-dem' ? 'Skyline derived from the local 15.36 km LOLA patch at 240 m grid spacing. It is a DEM-based local horizon estimate, not a surveyed lander-pad profile.' : terrainStatus === 'loading' ? 'LOLA terrain is loading; this interim view uses the site’s fallback horizon.' : analysis.horizonSource === 'custom' ? 'Custom sites use the entered constant horizon; no LOLA terrain is inferred.' : 'LOLA terrain is unavailable; this view uses the illustrative horizon profile.'}</p></div>
+    </div>
+  </section>;
+}
+function CompareTimeline({ a, b, index, onScrub, days }: { a: SiteAnalysis; b: SiteAnalysis; index: number; onScrub: (index: number) => void; days: number }) {
+  const current = a.samples[index];
+  return <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="label-caps text-primary">Synchronized mission windows</p><p className="mt-1 text-xs text-muted-foreground">Matching scales and dates · above 0° clears the local skyline</p></div><span className="font-mono text-[10px] text-white/60">{current ? formatUTC(current.t) : ''} UTC</span></div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-2"><ClearancePanel analysis={a} index={index} days={days}/><ClearancePanel analysis={b} index={index} days={days}/></div>
+    <div className="mt-2 flex gap-4 text-[9px] text-white/50"><span className="text-sun">━ Sun limb clearance</span><span className="text-earth">━ Earth limb clearance</span></div><input type="range" min={0} max={Math.max(0, a.samples.length - 1)} value={Math.min(index, a.samples.length - 1)} onChange={event => onScrub(Number(event.target.value))} aria-label="Scrub synchronized two-site mission comparison" className="mt-3 w-full accent-primary"/><div className="mt-1 flex justify-between font-mono text-[9px] text-white/40"><span>Shared mission start</span><span>Playback position {((index / STEPS) * days).toFixed(2)} d</span><span>Mission end</span></div>
+  </div>;
+}
+function ClearancePanel({ analysis, index, days }: { analysis: SiteAnalysis; index: number; days: number }) {
+  const W = 560, H = 175, left = 35, right = 12, top = 12, bottom = 23, plotW = W - left - right, plotH = H - top - bottom, min = -14, max = 14;
+  const yAt = (value: number) => top + (max - Math.max(min, Math.min(max, value))) / (max - min) * plotH;
+  const path = (body: 'sun' | 'earth') => analysis.samples.map((sample, i) => {
+    const clearance = body === 'sun' ? sample.sunAlt + sample.sunRadius - sample.sunHorizon : sample.earthAlt + sample.earthRadius - sample.earthHorizon;
+    const x = left + i / Math.max(1, analysis.samples.length - 1) * plotW;
+    return `${i ? 'L' : 'M'}${x.toFixed(2)},${yAt(clearance).toFixed(2)}`;
+  }).join(' ');
+  const cursor = left + index / Math.max(1, analysis.samples.length - 1) * plotW;
+  const source = analysis.horizonSource === 'lola-dem' ? 'NASA LOLA skyline' : analysis.horizonSource === 'custom' ? 'declared horizon' : 'illustrative horizon';
+  return <article className="min-w-0 rounded-xl border border-white/[0.08] bg-[#0b1117] p-3"><div className="flex items-start justify-between gap-2"><div className="truncate text-xs font-semibold">{analysis.site.name}</div><span className="shrink-0 text-[8px] text-white/40">{source}</span></div><svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full" role="img" aria-label={`Sun and Earth terrain clearance across ${days} days at ${analysis.site.name}`}>
+    {[-10, 0, 10].map(v => <g key={v}><line x1={left} x2={W-right} y1={yAt(v)} y2={yAt(v)} stroke={v === 0 ? '#63727a' : '#233039'} strokeDasharray={v === 0 ? '0' : '3 5'}/><text x={left - 6} y={yAt(v) + 3} textAnchor="end" fill="#788992" fontSize="8">{v}°</text></g>)}
+    <path d={path('sun')} fill="none" stroke="#ffc45d" strokeWidth="1.8"/><path d={path('earth')} fill="none" stroke="#62cbff" strokeWidth="1.8"/><line x1={cursor} x2={cursor} y1={top} y2={H-bottom} stroke="#f4f7f8" strokeWidth="1" strokeDasharray="3 4" opacity=".65"/><text x={left} y={H-5} fill="#788992" fontSize="8">Start</text><text x={W-right} y={H-5} textAnchor="end" fill="#788992" fontSize="8">{days} d</text>
+  </svg></article>;
+}
 function SiteCompareCard({ analysis }: { analysis: SiteAnalysis }) {
   return <article className="site-compare-card"><div><p className="label-caps text-white/40">{analysis.site.region}</p><h3 className="mt-2 text-lg font-semibold">{analysis.site.name}</h3><p className="mt-1 font-mono text-[9px] text-white/40">{Math.abs(analysis.site.lat).toFixed(2)}°S · {Math.abs(analysis.site.lon).toFixed(2)}°{analysis.site.lon < 0 ? 'W' : 'E'}</p></div><div className="site-compare-gauges"><MetricRing label="Sunlight" value={analysis.illumination} tone="sun"/><MetricRing label="Earth view" value={analysis.earthVisibility} tone="earth"/></div><div className="site-compare-foot"><span>LONGEST DARK <b>{formatDuration(analysis.longestDarkHours)}</b></span><span>LONGEST LINK GAP <b>{formatDuration(analysis.longestGapHours)}</b></span></div></article>;
 }
@@ -174,7 +252,7 @@ function WindowView({ analysis, index, onScrub, label }: { analysis: SiteAnalysi
   const sample = analysis.samples[index];
   if (!sample) return null;
   return <div className="min-w-0"><p className="mb-3 text-xs font-medium text-muted-foreground">{label} · <span className="font-mono">{formatUTC(sample.t)} UTC</span></p>
-    <dl className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur"><dt className="flex items-center gap-2 text-xs text-sun"><Sun className="size-4" />{sample.sunUp ? 'Sun above terrain' : 'Sun blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.sunAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.sunUp ? 'Sunset' : 'Sunrise'} {nextTransition(analysis, index, 'sun')}</dd></div><div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur"><dt className="flex items-center gap-2 text-xs text-earth"><Radio className="size-4" />{sample.earthUp ? 'Earth in view' : 'Earth blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.earthAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.earthUp ? 'Earthset' : 'Earthrise'} {nextTransition(analysis, index, 'earth')}</dd><p className="mt-3 text-[9px] text-muted-foreground">Planner visibility uses illustrative horizons.</p></div></dl>
+    <dl className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur"><dt className="flex items-center gap-2 text-xs text-sun"><Sun className="size-4" />{sample.sunUp ? 'Sun above terrain' : 'Sun blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.sunAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.sunUp ? 'Sunset' : 'Sunrise'} {nextTransition(analysis, index, 'sun')}</dd></div><div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur"><dt className="flex items-center gap-2 text-xs text-earth"><Radio className="size-4" />{sample.earthUp ? 'Earth in view' : 'Earth blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.earthAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.earthUp ? 'Earthset' : 'Earthrise'} {nextTransition(analysis, index, 'earth')}</dd><p className="mt-3 text-[9px] text-muted-foreground">Horizon: {analysis.horizonSource === 'lola-dem' ? 'NASA LOLA derived' : analysis.horizonSource === 'custom' ? 'declared constant' : 'illustrative fallback'}.</p></div></dl>
     <div className="mt-4"><TimelineStrip analysis={analysis} index={index} onScrub={onScrub} label={analysis.site.name} /></div>
     <details className="mt-4 border-t border-hairline pt-3"><summary className="cursor-pointer text-xs text-muted-foreground">Sunlight & direct-link intervals</summary><div className="mt-3 grid gap-4 sm:grid-cols-2">{(['sun', 'earth'] as const).map(body => <div key={body}><p className={`mb-2 text-xs font-medium ${body === 'sun' ? 'text-sun' : 'text-earth'}`}>{body === 'sun' ? 'Sunlight' : 'Earth link'}</p><ul className="max-h-40 space-y-2 overflow-auto font-mono text-[10px] text-muted-foreground">{(body === 'sun' ? analysis.sunlitIntervals : analysis.earthIntervals).map((i, n) => <li key={n}>{formatUTC(i.start)} → {formatUTC(i.end)}</li>)}{(body === 'sun' ? analysis.sunlitIntervals : analysis.earthIntervals).length === 0 && <li>No visible intervals in this window.</li>}</ul></div>)}</div><p className="mt-3 text-[10px] text-muted-foreground">Events are sampled to ≈ {formatDuration(analysis.stepMs / 3600000)}. Intervals are clipped at the mission boundaries; visibility uses the upper edge of each disc.</p></details>
   </div>;
