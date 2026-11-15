@@ -65,7 +65,7 @@ const GLOSSARY = [
 const LIMITS = [
   {
     title: "Directional accuracy",
-    body: "Truncated series give body directions good to a few arcminutes. That is far finer than the uncertainty in any terrain profile used here.",
+    body: "Observer parallax is included. Accuracy has not been independently validated here; use the in-app Compare with NASA Horizons panel to measure the actual error. The comparison reports mean and maximum elevation differences for the selected window.",
   },
   {
     title: "Illustrative terrain",

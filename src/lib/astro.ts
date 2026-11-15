@@ -6,7 +6,8 @@
  * Moon plus the optical-libration transform (Meeus ch. 53) to convert an
  * ecliptic direction into selenographic coordinates.
  *
-3. In the file’s top comment, replace the “Accuracy is on the order of a few arcminutes…” sentence with: “Observer parallax is included. Accuracy is NOT yet validated here: use the in-app Compare with NASA Horizons panel to measure the actual error.” Your Methods page also claims “a few arcminutes”, so soften that wording too.
+ * Observer parallax is included. Accuracy has not been independently validated;
+ * use the in-app NASA Horizons comparison to measure the actual error.
  */
 
 const DEG = Math.PI / 180;

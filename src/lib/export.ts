@@ -1,5 +1,8 @@
 import { formatUTC, type SiteAnalysis } from "./analysis";
 
+const MODEL_ID = "lunar-surface-meeus-truncated-v1";
+const MODEL_PROVENANCE = "Browser-computed truncated Meeus Sun/Moon series with optical libration and topocentric observer parallax; airless geometry; 12-sector horizon masks. Curated masks are illustrative, custom masks are user-entered constant horizons.";
+
 function download(filename: string, mime: string, body: string) {
   const blob = new Blob([body], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -34,6 +37,8 @@ export function summaryCsv(analyses: SiteAnalysis[]): string {
     "peak_sun_elevation_deg",
     "mean_earth_elevation_deg",
     "sunlit_episodes",
+    "model_id",
+    "model_provenance",
   ];
   const rows = analyses.map((a) =>
     [
@@ -52,6 +57,8 @@ export function summaryCsv(analyses: SiteAnalysis[]): string {
       a.maxSunAlt.toFixed(3),
       a.meanEarthAlt.toFixed(3),
       a.sunlitIntervals.length,
+      MODEL_ID,
+      MODEL_PROVENANCE,
     ]
       .map(csvCell)
       .join(","),
@@ -72,6 +79,8 @@ export function timeseriesCsv(analyses: SiteAnalysis[]): string {
     "earth_terrain_horizon_deg",
     "sunlit",
     "earth_visible",
+    "model_id",
+    "model_provenance",
   ];
   const rows: string[] = [];
   for (const a of analyses) {
@@ -88,6 +97,8 @@ export function timeseriesCsv(analyses: SiteAnalysis[]): string {
           s.earthHorizon.toFixed(3),
           s.sunUp ? 1 : 0,
           s.earthUp ? 1 : 0,
+          csvCell(MODEL_ID),
+          csvCell(MODEL_PROVENANCE),
         ].join(","),
       );
     }
@@ -102,6 +113,11 @@ export function reportJson(
   return JSON.stringify(
     {
       generated: new Date().toISOString(),
+      model: {
+        id: MODEL_ID,
+        provenance: MODEL_PROVENANCE,
+        accuracy: "Not independently validated; compare against NASA JPL Horizons for the selected site and window.",
+      },
       window: { startUtc: meta.start, durationDays: meta.days },
       note: "Planning-grade geometry. Curated horizon profiles are illustrative; custom sites use user-defined constant horizons. Not surveyed or flight-certified. Intervals are clipped to each window and events are sample-limited.",
       sites: analyses.map((a) => ({
