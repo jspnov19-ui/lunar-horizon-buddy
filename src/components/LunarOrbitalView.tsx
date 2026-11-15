@@ -3,7 +3,7 @@ import { RotateCcw } from 'lucide-react';
 import type { Sample, SiteAnalysis } from '@/lib/analysis';
 import { loadGltfLoader, loadThree } from '@/lib/three-loader';
 
-type OrbitalWorld = { THREE: any; renderer: any; scene: any; camera: any; trackGroup: any; bodyGroup: any; moon: any; theta: number; phi: number; distance: number };
+type OrbitalWorld = { THREE: any; renderer: any; scene: any; camera: any; trackGroup: any; bodyGroup: any; moon: any; sunlight: any; theta: number; phi: number; distance: number };
 const ORBIT_SCALE = { sun: 4.6, earth: 2.6 };
 
 function lunarPosition(THREE: any, lat: number, lon: number) {
@@ -53,7 +53,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
       renderer.domElement.setAttribute('aria-label', `Interactive 3D lunar orbital model for ${analysis.site.name}; drag to orbit and scroll to zoom.`);
       host.replaceChildren(renderer.domElement);
       scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-      const sunlight = new THREE.DirectionalLight(0xffe4b3, 1.8);
+      const sunlight = new THREE.DirectionalLight(0xffd89a, 2.35);
       sunlight.position.set(-4, 3, 5);
       scene.add(sunlight);
       const stars: number[] = [];
@@ -72,7 +72,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
       const trackGroup = new THREE.Group();
       const bodyGroup = new THREE.Group();
       scene.add(trackGroup, bodyGroup);
-      const world: OrbitalWorld = { THREE, renderer, scene, camera, trackGroup, bodyGroup, moon, theta: 0.62, phi: 1.22, distance: 8.2 };
+      const world: OrbitalWorld = { THREE, renderer, scene, camera, trackGroup, bodyGroup, moon, sunlight, theta: 0.62, phi: 1.22, distance: 8.2 };
       worldRef.current = world;
       const updateCamera = () => {
         camera.position.set(world.distance * Math.sin(world.phi) * Math.sin(world.theta), world.distance * Math.cos(world.phi), world.distance * Math.sin(world.phi) * Math.cos(world.theta));
@@ -174,9 +174,12 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
   useEffect(() => {
     const world = worldRef.current;
     if (!ready || !world || !current) return;
-    const { THREE, bodyGroup } = world;
+    const { THREE, bodyGroup, sunlight } = world;
     for (const child of [...bodyGroup.children]) { bodyGroup.remove(child); child.geometry?.dispose(); child.material?.dispose(); }
     const basis = lunarPosition(THREE, analysis.site.lat, analysis.site.lon);
+    const sunDirection = apparentDirection(THREE, basis, current.sunAlt, current.sunAz);
+    sunlight.position.copy(sunDirection.clone().multiplyScalar(9));
+    sunlight.target.position.set(0, 0, 0);
     const bodyPosition = (body: 'sun' | 'earth', sample: Sample) => {
       const altitude = body === 'sun' ? sample.sunAlt : sample.earthAlt;
       const azimuth = body === 'sun' ? sample.sunAz : sample.earthAz;
@@ -190,11 +193,11 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
       marker.renderOrder = 5;
       marker.position.copy(position);
       bodyGroup.add(marker);
-      if (body === 'sun') {
-        const tether = new THREE.Line(new THREE.BufferGeometry().setFromPoints([basis.up.clone().multiplyScalar(1.015), position]), new THREE.LineDashedMaterial({ color, dashSize: 0.08, gapSize: 0.055, transparent: true, opacity: 0.52 }));
-        tether.computeLineDistances();
-        bodyGroup.add(tether);
-      }
+      const halo = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.29 : 0.25, 24, 18), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: body === 'sun' ? 0.16 : 0.13, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending }));
+      halo.position.copy(position); halo.renderOrder = 4; bodyGroup.add(halo);
+      const tether = new THREE.Line(new THREE.BufferGeometry().setFromPoints([basis.up.clone().multiplyScalar(1.015), position]), new THREE.LineDashedMaterial({ color, dashSize: 0.075, gapSize: 0.045, transparent: true, opacity: visible ? 0.78 : 0.42, depthTest: false }));
+      tether.computeLineDistances();
+      bodyGroup.add(tether);
       if (body === 'sun' && visible) { const glow = new THREE.PointLight(color, 1.2, 3); glow.position.copy(position); bodyGroup.add(glow); }
     }
   }, [analysis.site.lat, analysis.site.lon, current, ready]);

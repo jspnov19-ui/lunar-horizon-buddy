@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
+import type { Sample } from '@/lib/analysis';
 import { loadThree } from '@/lib/three-loader';
 
 type TerrainManifest = { resolutionM: number; spanM: number; grid: number; sites: Record<string, { file: string; lat: number; lon: number; validFraction: number }> };
 let manifestPromise: Promise<TerrainManifest> | undefined;
 function getManifest() { return manifestPromise ??= fetch('/lola-sites/manifest.json').then(r => { if (!r.ok) throw new Error('Terrain catalog unavailable'); return r.json(); }); }
 
-export function LolaTerrain({ siteId, siteName, className = '' }: { siteId: string; siteName: string; className?: string }) {
+type TerrainWorld = { THREE: any; sunLight: any; overlayGroup: any; scene: any; sampleHeight: (x: number, z: number) => number };
+
+export function LolaTerrain({ siteId, siteName, latitude, longitude, sample, className = '' }: { siteId: string; siteName: string; latitude: number; longitude: number; sample: Sample | undefined; className?: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const worldRef = useRef<TerrainWorld | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   useEffect(() => {
     let cancelled = false, frame = 0, renderer: any, sceneRef: any, observer: ResizeObserver | undefined;
@@ -24,12 +28,13 @@ export function LolaTerrain({ siteId, siteName, className = '' }: { siteId: stri
       const camera = new THREE.PerspectiveCamera(34, 1, .05, 100);
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
       renderer.domElement.className = 'block size-full touch-none cursor-grab active:cursor-grabbing';
       renderer.domElement.setAttribute('aria-label', `Interactive NASA LOLA elevation terrain for ${siteName}; drag to rotate and scroll to zoom.`);
       host.replaceChildren(renderer.domElement);
-      scene.add(new THREE.AmbientLight(0x737b89, .12));
-      const light = new THREE.DirectionalLight(0xf0eee9, 4.1); light.position.set(-7, 3.5, 8); scene.add(light);
+      scene.add(new THREE.AmbientLight(0x737b89, .18));
+      const light = new THREE.DirectionalLight(0xffd69b, 2.6); light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.camera.left = -9; light.shadow.camera.right = 9; light.shadow.camera.top = 9; light.shadow.camera.bottom = -9; light.shadow.camera.near = .1; light.shadow.camera.far = 45; light.shadow.bias = -.0002; light.position.set(-7, 3.5, 8); light.target.position.set(0, 0, 0); scene.add(light, light.target);
       const fill = new THREE.DirectionalLight(0x8b96a8, .12); fill.position.set(7, 2, -5); scene.add(fill);
       const geometry = new THREE.PlaneGeometry(span, span, grid - 1, grid - 1);
       geometry.rotateX(-Math.PI / 2);
@@ -47,6 +52,7 @@ export function LolaTerrain({ siteId, siteName, className = '' }: { siteId: stri
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.computeVertexNormals();
       const surface = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, side: THREE.DoubleSide, flatShading: false }));
       surface.material.color.setRGB(.58, .58, .58);
+      surface.castShadow = true; surface.receiveShadow = true;
       scene.add(surface);
       const sampleHeight = (x: number, y: number) => {
         const gx = Math.max(0, Math.min(grid - 1, Math.round((x / span + .5) * (grid - 1))));
@@ -62,6 +68,8 @@ export function LolaTerrain({ siteId, siteName, className = '' }: { siteId: stri
       outline.geometry.setDrawRange(0, 0); outlineGlow.geometry.setDrawRange(0, 0);
       scene.add(outlineGlow, outline);
       const marker = new THREE.Mesh(new THREE.SphereGeometry(.075, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffc968 })); marker.position.set(0, sampleHeight(0, 0) + .06, 0); scene.add(marker);
+      const overlayGroup = new THREE.Group(); scene.add(overlayGroup);
+      worldRef.current = { THREE, sunLight: light, overlayGroup, scene, sampleHeight };
       const stars: number[] = []; for (let i = 0; i < 230; i++) { const a = i * 2.399, r = 14 + (i % 13); stars.push(Math.cos(a) * r, 5 + (i % 11) * .45, Math.sin(a) * r); }
       const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(stars, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xc8d9f3, size: .045, transparent: true, opacity: .7 })));
       let theta = .58, phi = 1.34, distance = 21;
@@ -77,9 +85,52 @@ export function LolaTerrain({ siteId, siteName, className = '' }: { siteId: stri
       const boundaryStarted = performance.now();
       const animate = () => { if (cancelled) return; frame = requestAnimationFrame(animate); const reveal = Math.min(1, (performance.now() - boundaryStarted) / 1100); const drawn = Math.floor(boundaryIndices * reveal); outline.geometry.setDrawRange(0, drawn); outlineGlow.geometry.setDrawRange(0, drawn); renderer.render(scene, camera); }; animate(); setState('ready');
     }).catch(() => { if (!cancelled) setState('error'); });
-    return () => { cancelled = true; cancelAnimationFrame(frame); observer?.disconnect(); for (const [name, fn, options] of listeners) renderer?.domElement.removeEventListener(name, fn, options); sceneRef?.traverse((o: any) => { o.geometry?.dispose(); o.material?.dispose?.(); }); renderer?.dispose(); renderer?.domElement.remove(); };
+    return () => { cancelled = true; worldRef.current = null; cancelAnimationFrame(frame); observer?.disconnect(); for (const [name, fn, options] of listeners) renderer?.domElement.removeEventListener(name, fn, options); sceneRef?.traverse((o: any) => { o.geometry?.dispose(); o.material?.dispose?.(); }); renderer?.dispose(); renderer?.domElement.remove(); };
   }, [siteId, siteName]);
+
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world || !sample) return;
+    const { THREE, sunLight, overlayGroup, scene, sampleHeight } = world;
+    for (const child of [...overlayGroup.children]) {
+      overlayGroup.remove(child);
+      child.geometry?.dispose();
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      for (const material of materials) material?.dispose?.();
+    }
+    const lon = longitude * Math.PI / 180;
+    const sunAngle = sample.sunAz * Math.PI / 180;
+    const sunAltitude = sample.sunAlt * Math.PI / 180;
+    const sunDirection = new THREE.Vector3(Math.cos(sunAltitude) * Math.sin(lon + sunAngle), Math.sin(sunAltitude), Math.cos(sunAltitude) * Math.cos(lon + sunAngle));
+    sunLight.position.copy(sunDirection.clone().multiplyScalar(18));
+    sunLight.intensity = sample.sunUp ? 3.0 : 0.45;
+    sunLight.castShadow = sample.sunUp;
+    const originY = sampleHeight(0, 0) + .12;
+    for (const body of ['sun', 'earth'] as const) {
+      const azimuth = (body === 'sun' ? sample.sunAz : sample.earthAz) * Math.PI / 180;
+      const altitude = body === 'sun' ? sample.sunAlt : sample.earthAlt;
+      const color = body === 'sun' ? 0xffbf58 : 0x57c9ff;
+      const distance = 3.25;
+      // Polar-map grid north is rotated by the site's longitude; this projects
+      // the true local azimuth into the DEM patch's x/z plane.
+      const angle = lon + azimuth;
+      const x = Math.sin(angle) * distance;
+      const z = Math.cos(angle) * distance;
+      const y = originY + Math.max(-1.1, Math.min(1.5, Math.tan(altitude * Math.PI / 180) * distance * .48));
+      const points = [new THREE.Vector3(0, originY, 0), new THREE.Vector3(x, y, z)];
+      const ray = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color, dashSize: .14, gapSize: .09, transparent: true, opacity: .88, depthTest: false }));
+      ray.computeLineDistances();
+      overlayGroup.add(ray);
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(.11, 18, 14), new THREE.MeshBasicMaterial({ color, depthTest: false }));
+      dot.position.set(x, y, z); dot.renderOrder = 6; overlayGroup.add(dot);
+      const halo = new THREE.Mesh(new THREE.SphereGeometry(.2, 18, 14), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .2, depthTest: false }));
+      halo.position.copy(dot.position); halo.renderOrder = 5; overlayGroup.add(halo);
+      const altitudeTick = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, originY, z), new THREE.Vector3(x, y, z)]), new THREE.LineDashedMaterial({ color, dashSize: .07, gapSize: .06, transparent: true, opacity: .55, depthTest: false }));
+      altitudeTick.computeLineDistances(); overlayGroup.add(altitudeTick);
+    }
+    scene.updateMatrixWorld(true);
+  }, [sample, latitude, longitude, state]);
   return <section className={`overflow-hidden rounded-2xl border border-white/10 bg-[#080a0d] ${className}`} aria-label={`NASA LOLA terrain at ${siteName}`}>
-    <div className="terrain-loading relative h-[250px] sm:h-[315px]" data-terrain-canvas="true"><div ref={hostRef} className="size-full"/>{state === 'loading' && <div className="absolute inset-0 grid place-items-center text-xs text-white/65"><span className="flex items-center gap-2"><i className="size-1.5 animate-pulse rounded-full bg-primary"/>Mapping LOLA elevation…</span></div>}{state === 'error' && <div className="absolute inset-0 grid place-items-center text-xs text-white/55">This site’s LOLA patch could not load.</div>}<div className="pointer-events-none absolute left-3 top-3 rounded-md border border-white/10 bg-black/60 px-2.5 py-2 font-mono text-[9px] uppercase tracking-wider text-white/70">LOLA TERRAIN <span className="mx-1 text-white/25">·</span> 240 m / px</div><div className="pointer-events-none absolute left-1/2 top-[36%] -translate-x-1/2 rounded-sm bg-black/75 px-2 py-1 text-[10px] font-medium text-white shadow">{siteName}</div><span className="pointer-events-none absolute left-[13%] top-1/2 text-[9px] font-mono text-[#f04470]">W</span><span className="pointer-events-none absolute right-[13%] top-1/2 text-[9px] font-mono text-[#f04470]">E</span><span className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 text-[9px] font-mono text-[#f04470]">S</span><div className="pointer-events-none absolute bottom-2 right-3 rounded bg-black/60 px-2 py-1 text-[8px] text-white/55">Drag to rotate · scroll to zoom</div></div>
+    <div className="terrain-loading relative h-[250px] sm:h-[315px]" data-terrain-canvas="true"><div ref={hostRef} className="size-full"/>{state === 'loading' && <div className="absolute inset-0 grid place-items-center text-xs text-white/65"><span className="flex items-center gap-2"><i className="size-1.5 animate-pulse rounded-full bg-primary"/>Mapping LOLA elevation…</span></div>}{state === 'error' && <div className="absolute inset-0 grid place-items-center text-xs text-white/55">This site’s LOLA patch could not load.</div>}<div className="pointer-events-none absolute left-3 top-3 rounded-md border border-white/10 bg-black/60 px-2.5 py-2 font-mono text-[9px] uppercase tracking-wider text-white/70">LOLA TERRAIN <span className="mx-1 text-white/25">·</span> 240 m / px</div><div className="pointer-events-none absolute left-1/2 top-[36%] -translate-x-1/2 rounded-sm bg-black/75 px-2 py-1 text-[10px] font-medium text-white shadow">{siteName}</div><span className="pointer-events-none absolute left-[13%] top-1/2 text-[9px] font-mono text-[#f04470]">W</span><span className="pointer-events-none absolute right-[13%] top-1/2 text-[9px] font-mono text-[#f04470]">E</span><span className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 text-[9px] font-mono text-[#f04470]">S</span><div className="pointer-events-none absolute bottom-2 right-3 rounded bg-black/60 px-2 py-1 text-[8px] text-white/55">Drag to rotate - scroll to zoom</div><div className="pointer-events-none absolute bottom-2 left-3 flex flex-wrap gap-1.5"><span className="rounded-md border border-sun/30 bg-black/75 px-2 py-1 font-mono text-[8px] text-sun">SUN {sample.sunAlt >= 0 ? '+' : ''}{sample.sunAlt.toFixed(1)} deg - {sample.sunUp ? 'CLEAR' : 'BELOW HORIZON'}</span><span className="rounded-md border border-earth/30 bg-black/75 px-2 py-1 font-mono text-[8px] text-earth">EARTH {sample.earthAlt >= 0 ? ' + ' : ''}{sample.earthAlt.toFixed(1)} deg - {sample.earthUp ? 'IN VIEW' : 'BELOW HORIZON'}</span></div></div>
   </section>;
 }
