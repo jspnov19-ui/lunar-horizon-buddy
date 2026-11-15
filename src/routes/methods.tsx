@@ -83,6 +83,37 @@ const GLOSSARY = [
   ],
 ];
 
+const RESOURCES = [
+  {
+    name: "LROC QuickMap",
+    provider: "Arizona State University · Lunar Reconnaissance Orbiter",
+    description:
+      "Explore lunar imagery, elevation products, and the terrain surrounding candidate landing regions.",
+    href: "https://quickmap.lroc.asu.edu/",
+  },
+  {
+    name: "NASA Moon Trek",
+    provider: "NASA",
+    description:
+      "View lunar terrain in 3D and explore mission data layers for spatial context around a site.",
+    href: "https://trek.nasa.gov/moon/",
+  },
+  {
+    name: "JPL Horizons",
+    provider: "NASA Jet Propulsion Laboratory",
+    description:
+      "Generate precise ephemerides for Sun and Earth positions; this app can create site- and date-specific queries.",
+    href: "https://ssd.jpl.nasa.gov/horizons/",
+  },
+  {
+    name: "Moon exploration",
+    provider: "Canadian Space Agency",
+    description:
+      "Learn about Canada’s lunar exploration programs, technology contributions, and international partnerships.",
+    href: "https://www.asc-csa.gc.ca/eng/astronomy/moon-exploration/",
+  },
+];
+
 const LIMITS = [
   {
     title: "Directional accuracy",
@@ -188,6 +219,37 @@ function MethodsPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mt-14" aria-labelledby="data-resources-heading">
+          <h2 id="data-resources-heading" className="label-caps text-primary">
+            Data &amp; agency resources
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Use these primary sources to investigate surface context, inspect agency programs, and
+            validate mission geometry beyond this screening model.
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {RESOURCES.map((resource) => (
+              <li key={resource.name}>
+                <a
+                  href={resource.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="glass-panel group flex h-full flex-col rounded-xl p-5 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="label-caps text-muted-foreground">{resource.provider}</span>
+                  <span className="mt-2 font-display text-base font-semibold text-foreground group-hover:text-primary">
+                    {resource.name}
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </span>
+                  <span className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {resource.description}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* Glossary */}

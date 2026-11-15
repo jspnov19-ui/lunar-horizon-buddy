@@ -22,6 +22,14 @@ export function LunarTools({ site, startMs, days }: LunarToolsProps) {
         Open LROC QuickMap
       </a>
       <a
+        href="https://trek.nasa.gov/moon/"
+        target="_blank"
+        rel="noreferrer"
+        className="rounded-md border border-input px-3 py-2 text-xs font-medium transition-colors hover:bg-secondary"
+      >
+        Explore NASA Moon Trek
+      </a>
+      <a
         href={sunUrl}
         target="_blank"
         rel="noreferrer"
