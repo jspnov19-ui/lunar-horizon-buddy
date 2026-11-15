@@ -4,7 +4,6 @@ import { ArrowDown, ArrowRight, Globe2, Radio, Sun } from "lucide-react";
 import heroImage from "@/assets/lunar-south-pole.jpg";
 import { Button } from "@/components/ui/button";
 import { SITES } from "@/lib/sites";
-import { LolaTerrain } from "@/components/LolaTerrain";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,7 +23,6 @@ function LandingPage() {
   return <main className="landing-page">
     <section className="landing-hero relative isolate min-h-[620px] overflow-hidden border-b border-white/10 md:min-h-[690px]">
       <img src={heroImage} alt="Lunar south-pole ridges illuminated by low sunlight" className="absolute inset-0 -z-20 size-full object-cover object-center" />
-      <LolaTerrain siteId="de-gerlache-rim" siteName="de Gerlache Rim 2" className="absolute inset-0 z-[-1] rounded-none border-0 [&_[data-terrain-canvas]]:!h-full" />
       <div className="landing-hero-shade absolute inset-0 -z-10" />
       <div className="landing-stars absolute inset-0 -z-10" aria-hidden="true" />
       <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-16 md:min-h-[690px] md:grid-cols-[minmax(0,1fr)_330px] md:px-8 md:py-20">
