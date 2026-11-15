@@ -259,10 +259,11 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       else child.material?.dispose();
     }
     world.markers = [];
-    sites.forEach(site => {
+    const sitePalette = [0x54d6c7, 0x7ab7ff, 0xd18dff, 0x77d99b, 0xff9f75, 0x9daaff, 0xe4c96c, 0x62c8e8];
+    sites.forEach((site, siteIndex) => {
       const isFocused = site.id === detailId;
       const isIncluded = selected.includes(site.id);
-      const color = isFocused ? 0xffc568 : isIncluded ? 0x53d4c5 : 0xc4d0d3;
+      const color = isFocused ? 0xffc568 : isIncluded ? sitePalette[siteIndex % sitePalette.length] : 0x707984;
       const point = siteVector(THREE, site);
       const marker = new THREE.Mesh(new THREE.SphereGeometry(isFocused ? 0.025 : 0.018, 16, 16), new THREE.MeshBasicMaterial({ color }));
       marker.position.copy(point.clone().multiplyScalar(1.012));
@@ -270,6 +271,11 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       marker.userData.siteName = site.name;
       markerGroup.add(marker);
       world.markers.push(marker);
+      if (isFocused) {
+        const halo = new THREE.Mesh(new THREE.SphereGeometry(0.045, 20, 20), new THREE.MeshBasicMaterial({ color: 0xffc568, transparent: true, opacity: 0.2, depthWrite: false }));
+        halo.position.copy(point.clone().multiplyScalar(1.012));
+        markerGroup.add(halo);
+      }
       const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.0025, 0.0025, isFocused ? 0.085 : 0.055, 7), new THREE.MeshBasicMaterial({ color }));
       pin.position.copy(point.clone().multiplyScalar(1.045));
       pin.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), point);
@@ -307,7 +313,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
   return <div className="lunar-globe-frame overflow-hidden rounded-2xl border border-white/10 bg-[#05060a]">
     <div className="relative h-[380px] sm:h-[480px] lg:h-[560px]">
       <div ref={hostRef} className="size-full" />
-      {(!worldReady || !modelReady) && <div className="absolute inset-0 z-10 grid place-items-center bg-[#05060a]/80 text-xs text-white/80">Loading NASA lunar surface… {loadProgress}%</div>}
+      {(!worldReady || !modelReady) && <div className="moon-load-overlay absolute inset-0 z-10 grid place-items-center bg-[#05060a]/80 text-xs text-white/80"><div className="flex flex-col items-center"><div className="moon-load-orbit mb-5"><span /></div><p className="label-caps text-white/75">Mapping the south pole</p><p className="mt-2 font-mono text-[10px] text-white/45">NASA LRO SURFACE · {loadProgress}%</p><div className="mt-3 h-px w-40 overflow-hidden bg-white/10"><span className="block h-full bg-primary transition-[width] duration-300" style={{ width: `${loadProgress}%` }} /></div></div></div>}
       <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-md border border-white/10 bg-black/40 px-2.5 py-2 text-[10px] text-white/75 backdrop-blur"><Compass className="size-3.5 text-primary" /> SOUTH POLE VIEW <span className="text-white/35">·</span> DRAG TO ORBIT</div>
       <div className="absolute right-3 top-3 flex gap-1.5"><Button size="icon" variant="outline" className="size-8 border-white/15 bg-black/45 text-white hover:bg-white/15" aria-label="Zoom out" onClick={() => zoom(0.5)}>−</Button><Button size="icon" variant="outline" className="size-8 border-white/15 bg-black/45 text-white hover:bg-white/15" aria-label="Zoom in" onClick={() => zoom(-0.5)}>+</Button><Button size="icon" variant="outline" className="size-8 border-white/15 bg-black/45 text-white hover:bg-white/15" aria-label="Reset Moon view" onClick={reset}><RotateCcw className="size-3.5" /></Button></div>
       {hovered && <div className="pointer-events-none absolute bottom-3 right-3 rounded-md bg-black/55 px-2.5 py-2 text-xs text-white/85 backdrop-blur">{hovered}</div>}

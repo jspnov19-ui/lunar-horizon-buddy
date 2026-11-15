@@ -10,7 +10,6 @@ import { customSite, nextTransition, rankSites, type Priority } from '@/lib/plan
 import { exportReportJson, exportSummaryCsv, exportTimeseriesCsv } from '@/lib/export';
 import { MissionSummary } from '@/components/MissionSummary';
 import { TermHelp } from '@/components/TermHelp';
-import { LolaTerrain } from '@/components/LolaTerrain';
 
 export const Route = createFileRoute('/planner')({
   head: () => ({ meta: [
@@ -55,7 +54,6 @@ function PlannerPage() {
   const detail = ranked.find(a => a.site.id === detailId) ?? ranked[0];
   const altDetail = alternateRanked.find(a => a.site.id === detail?.site.id);
   const best = ranked[0];
-  const stageSample = detail?.samples[index];
   const all = [...ranked, ...alternateRanked];
   const simulatorHref = detail
     ? detail.site.id.startsWith('custom-')
@@ -88,19 +86,6 @@ function PlannerPage() {
       <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">Explore candidate landing zones on the Moon, shape a custom site, and see how sunlight and Earth contact change across your mission.</p>
       <div className="mt-6 flex flex-wrap gap-2 text-[11px] text-white/70"><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">01 <span className="ml-1 text-white/45">Explore the Moon</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">02 <span className="ml-1 text-white/45">Set mission conditions</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">03 <span className="ml-1 text-white/45">Compare the windows</span></span></div>
     </header>
-
-    {detail && <section className="planner-site-stage mb-12" aria-label={`Selected site preview: ${detail.site.name}`}>
-      <div className="planner-stage-heading mb-3 flex flex-wrap items-end justify-between gap-3">
-        <div><p className="label-caps text-primary">Mission site preview <span className="mx-1 text-white/25">/</span> NASA LOLA elevation</p><h2 className="mt-1 text-xl font-semibold md:text-2xl">{detail.site.name}</h2></div>
-        <span className="font-mono text-[10px] text-white/50">{Math.abs(detail.site.lat).toFixed(2)}° {detail.site.lat < 0 ? 'S' : 'N'} <span className="mx-1 text-white/25">/</span> {Math.abs(detail.site.lon).toFixed(2)}° {detail.site.lon < 0 ? 'W' : 'E'}</span>
-      </div>
-      {detail.site.id.startsWith('custom-') ? <div className="planner-custom-stage"><div className="planner-custom-crosshair" aria-hidden="true"><span /></div><div><p className="label-caps text-primary">Custom coordinates</p><h3 className="mt-2 text-2xl font-semibold">{detail.site.name}</h3><p className="mt-2 max-w-md text-sm leading-relaxed text-white/60">No surveyed terrain patch is available for custom sites. This preview keeps the declared constant horizon assumption visible.</p><p className="mt-4 font-mono text-xs text-white/45">{detail.site.horizon[0]?.toFixed(1) ?? '0.0'}° CONSTANT HORIZON</p></div></div> : <div className="planner-stage-frame">
-        <LolaTerrain siteId={detail.site.id} siteName={detail.site.name} className="planner-terrain-canvas rounded-[22px] border-white/10" />
-        <div className="planner-stage-vignette" aria-hidden="true" />
-        <div className="planner-stage-readout planner-stage-readout-top"><span className="planner-live-dot" /> SITE SELECTED <span className="text-white/25">·</span> {detail.site.region.toUpperCase()}</div>
-        <div className="planner-stage-readout planner-stage-readout-bottom"><div className="planner-stage-controls"><div className="flex items-center gap-3"><Button size="icon" variant="outline" className="size-8 shrink-0 border-white/15 bg-black/35 text-white hover:bg-white/10" aria-label={playing ? 'Pause mission timeline' : 'Play mission timeline'} onClick={() => setPlaying(value => !value)}>{playing ? <Pause className="size-3.5" /> : <Play className="size-3.5" />}</Button><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="label-caps text-white/45">Mission timeline</p><p className="font-mono text-[9px] text-white/70">{formatUTC(stageSample?.t ?? startMs)} UTC</p></div><input type="range" min={0} max={STEPS} value={index} onChange={event => { setPlaying(false); setIndex(Number(event.target.value)); }} aria-label="Scrub mission timeline to update site sunlight and Earth visibility" className="planner-stage-scrubber mt-2 w-full" /><div className="flex justify-between font-mono text-[8px] text-white/40"><span>LANDING</span><span>{(index / STEPS * days).toFixed(1)} / {days} DAYS</span><span>MISSION END</span></div></div></div><p className="mt-2 hidden text-[10px] text-white/55 sm:block">Drag to explore terrain · scrub to preview Sun and Earth positions</p></div><div className="planner-stage-stats"><span><b className="text-sun">{stageSample?.sunAlt.toFixed(1) ?? '—'}°</b><small>{stageSample?.sunUp ? 'Sun above terrain' : 'Sun below horizon'}</small></span><span><b className="text-earth">{stageSample?.earthAlt.toFixed(1) ?? '—'}°</b><small>{stageSample?.earthUp ? 'Earth in view' : 'Earth below horizon'}</small></span><span><b>{stageSample?.sunUp ? 'DAYLIGHT' : 'NIGHT'}</b><small>{stageSample?.earthUp ? 'Earth visible' : 'Earth occulted'}</small></span></div></div>
-      </div>}
-    </section>}
 
     <section aria-labelledby="step-1" className="mb-10">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><SectionTitle id="step-1" n="1" title="Pick a landing site" /><Button asChild variant="outline" size="sm"><a href={simulatorHref}><Globe2 />See this site from the surface <ArrowRight /></a></Button></div>
