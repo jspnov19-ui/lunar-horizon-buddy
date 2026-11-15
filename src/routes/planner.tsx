@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays } from 'lucide-react';
+import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SkyDome } from '@/components/SkyDome';
 import { TimelineStrip } from '@/components/TimelineStrip';
@@ -52,6 +52,11 @@ function PlannerPage() {
   const altDetail = alternateRanked.find(a => a.site.id === detail?.site.id);
   const best = ranked[0];
   const all = [...ranked, ...alternateRanked];
+  const simulatorHref = detail
+    ? detail.site.id.startsWith('custom-')
+      ? `/simulator?site=${encodeURIComponent(detail.site.id)}&lat=${detail.site.lat}&lon=${detail.site.lon}&name=${encodeURIComponent(detail.site.name)}&horizon=${detail.site.horizon[0] ?? 0}`
+      : `/simulator?site=${encodeURIComponent(detail.site.id)}`
+    : '/simulator';
   useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => setIndex(i => (i + 1) % (STEPS + 1)), 100);
@@ -80,7 +85,7 @@ function PlannerPage() {
     </header>
 
     <section aria-labelledby="step-1" className="mb-10">
-      <SectionTitle id="step-1" n="1" title="Pick a landing site" />
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><SectionTitle id="step-1" n="1" title="Pick a landing site" /><Button asChild variant="outline" size="sm"><a href={simulatorHref}><Globe2 />See this site from the surface <ArrowRight /></a></Button></div>
       <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_310px]">
         <PolarMap sites={sites} selected={selected} detailId={detail?.site.id ?? detailId} currentTimeMs={startMs + (index / STEPS) * days * 86400000} onPick={pickSite} onAdd={addFromMap} />
         <div className="site-selector rounded-2xl border border-white/10 p-4 md:p-5">

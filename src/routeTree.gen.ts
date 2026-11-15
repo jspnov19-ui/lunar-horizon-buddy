@@ -14,6 +14,7 @@ import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as MethodsRouteImport } from './routes/methods'
 import { Route as ModelsRouteImport } from './routes/models'
 import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as SimulatorRouteImport } from './routes/simulator'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const PlannerRoute = PlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SimulatorRoute = SimulatorRouteImport.update({
+  id: '/simulator',
+  path: '/simulator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/methods': typeof MethodsRoute
   '/models': typeof ModelsRoute
   '/planner': typeof PlannerRoute
+  '/simulator': typeof SimulatorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/methods': typeof MethodsRoute
   '/models': typeof ModelsRoute
   '/planner': typeof PlannerRoute
+  '/simulator': typeof SimulatorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,14 @@ export interface FileRoutesById {
   '/methods': typeof MethodsRoute
   '/models': typeof ModelsRoute
   '/planner': typeof PlannerRoute
+  '/simulator': typeof SimulatorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/how-it-works' | '/methods' | '/models' | '/planner'
+  fullPaths: '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/how-it-works' | '/methods' | '/models' | '/planner'
-  id: '__root__' | '/' | '/how-it-works' | '/methods' | '/models' | '/planner'
+  to: '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator'
+  id: '__root__' | '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +86,7 @@ export interface RootRouteChildren {
   MethodsRoute: typeof MethodsRoute
   ModelsRoute: typeof ModelsRoute
   PlannerRoute: typeof PlannerRoute
+  SimulatorRoute: typeof SimulatorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/simulator': {
+      id: '/simulator'
+      path: '/simulator'
+      fullPath: '/simulator'
+      preLoaderRoute: typeof SimulatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +142,7 @@ const rootRouteChildren: RootRouteChildren = {
   MethodsRoute: MethodsRoute,
   ModelsRoute: ModelsRoute,
   PlannerRoute: PlannerRoute,
+  SimulatorRoute: SimulatorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
