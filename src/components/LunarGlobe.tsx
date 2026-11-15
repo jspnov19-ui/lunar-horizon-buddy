@@ -27,6 +27,7 @@ type ThreeWorld = {
   markerGroup: any;
   raycaster: any;
   markers: any[];
+  surfaceMeshes: any[];
   theta: number;
   phi: number;
   distance: number;
@@ -36,6 +37,7 @@ type ThreeWorld = {
 };
 
 let threeLoader: Promise<any> | null = null;
+let gltfLoaderScript: Promise<void> | null = null;
 function loadThree() {
   if (window.THREE) return Promise.resolve(window.THREE);
   if (!threeLoader) {
@@ -51,69 +53,19 @@ function loadThree() {
   return threeLoader;
 }
 
-function makeMoonTexture(THREE: any) {
-  const width = 1024, height = 512;
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not create the Moon texture.');
-  const image = ctx.createImageData(width, height);
-  const fract = (n: number) => n - Math.floor(n);
-  const hash = (x: number, y: number, z: number) => fract(Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453);
-  const noise = (x: number, y: number, z: number) => {
-    const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
-    const fx = x - ix, fy = y - iy, fz = z - iz;
-    const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy), w = fz * fz * (3 - 2 * fz);
-    const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-    const corner = (a: number, b: number, c: number) => hash(ix + a, iy + b, iz + c);
-    const z0 = mix(mix(corner(0, 0, 0), corner(1, 0, 0), u), mix(corner(0, 1, 0), corner(1, 1, 0), u), v);
-    const z1 = mix(mix(corner(0, 0, 1), corner(1, 0, 1), u), mix(corner(0, 1, 1), corner(1, 1, 1), u), v);
-    return mix(z0, z1, w);
-  };
-
-  // Fixed seed makes the supplied model's procedural terrain consistent across visits.
-  let seed = 0x51f15e;
-  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  const craters = Array.from({ length: 90 }, () => {
-    const y = random() * 2 - 1, angle = random() * Math.PI * 2, r = Math.sqrt(1 - y * y);
-    return { x: r * Math.cos(angle), y, z: r * Math.sin(angle), radius: 0.03 + random() ** 3 * 0.16 };
-  });
-  const craterLimits = craters.map(c => Math.cos(c.radius * 1.25));
-  for (let j = 0; j < height; j++) {
-    const lat = (0.5 - j / height) * Math.PI;
-    const cy = Math.sin(lat), cl = Math.cos(lat);
-    for (let i = 0; i < width; i++) {
-      const lon = i / width * Math.PI * 2;
-      const x = cl * Math.cos(lon), z = cl * Math.sin(lon);
-      let n = 0, amp = 0.5, frequency = 3;
-      for (let octave = 0; octave < 4; octave++) {
-        n += amp * noise(x * frequency + 9, cy * frequency + 9, z * frequency + 9);
-        amp *= 0.5;
-        frequency *= 2;
-      }
-      let tone = 0.38 + n * 0.5;
-      for (let c = 0; c < craters.length; c++) {
-        const crater = craters[c]!;
-        const dot = x * crater.x + cy * crater.y + z * crater.z;
-        if (dot <= craterLimits[c]!) continue;
-        const distance = Math.acos(Math.min(1, dot)) / crater.radius;
-        if (distance < 0.85) tone -= 0.12 * (1 - distance / 0.85) * 0.8;
-        else if (distance < 1.25) tone += 0.2 * Math.sin((distance - 0.85) / 0.4 * Math.PI);
-      }
-      const value = Math.max(0, Math.min(255, tone * 255));
-      const offset = (j * width + i) * 4;
-      image.data[offset] = value;
-      image.data[offset + 1] = value;
-      image.data[offset + 2] = value * 0.96;
-      image.data[offset + 3] = 255;
-    }
+function loadGltfLoader() {
+  if (window.THREE?.GLTFLoader) return Promise.resolve();
+  if (!gltfLoaderScript) {
+    gltfLoaderScript = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+      script.async = true;
+      script.onload = () => window.THREE?.GLTFLoader ? resolve() : reject(new Error('The glTF loader did not initialize.'));
+      script.onerror = () => reject(new Error('The glTF loader could not be loaded.'));
+      document.head.appendChild(script);
+    });
   }
-  ctx.putImageData(image, 0, 0);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.encoding = THREE.sRGBEncoding;
-  texture.anisotropy = 4;
-  return texture;
+  return gltfLoaderScript;
 }
 
 function siteVector(THREE: any, site: Pick<LandingSite, 'lat' | 'lon'>) {
@@ -129,6 +81,8 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
   const [hovered, setHovered] = useState('');
   const [failed, setFailed] = useState(false);
   const [worldReady, setWorldReady] = useState(false);
+  const [modelReady, setModelReady] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
   latestRef.current = { sites, selected, detailId, onPick, onAdd };
 
   useEffect(() => {
@@ -136,10 +90,10 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
     let frame = 0;
     let observer: ResizeObserver | undefined;
     let renderer: any;
-    let texture: any;
     let starGeometry: any;
     let starMaterial: any;
-    loadThree().then(THREE => {
+    loadThree().then(async THREE => {
+      await loadGltfLoader();
       if (cancelled || !hostRef.current) return;
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x05060a);
@@ -148,18 +102,18 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
       renderer.domElement.className = 'block size-full touch-none cursor-grab active:cursor-grabbing';
       renderer.domElement.setAttribute('aria-label', 'Interactive 3D Moon. Drag to rotate; select a landing marker or click the surface to plot a custom site.');
       host.replaceChildren(renderer.domElement);
 
-      texture = makeMoonTexture(THREE);
-      const moon = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 128, 96),
-        new THREE.MeshStandardMaterial({ map: texture, bumpMap: texture, bumpScale: 0.055, roughness: 1, metalness: 0 }),
-      );
+      const moon = new THREE.Group();
       scene.add(moon);
-      scene.add(new THREE.AmbientLight(0xffffff, 0.28));
-      const sunlight = new THREE.DirectionalLight(0xfff2d5, 2.15);
+      const placeholder = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 64), new THREE.MeshStandardMaterial({ color: 0x777775, roughness: 1, metalness: 0 }));
+      moon.add(placeholder);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.24));
+      const sunlight = new THREE.DirectionalLight(0xffffff, 1.85);
       sunlight.position.set(-4, 3, 5);
       scene.add(sunlight);
       const sunMarker = new THREE.Mesh(new THREE.SphereGeometry(0.055, 24, 24), new THREE.MeshBasicMaterial({ color: 0xffd24a }));
@@ -178,7 +132,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
 
       const world: ThreeWorld = {
         THREE, renderer, scene, camera, moon, markerGroup: new THREE.Group(),
-        raycaster: new THREE.Raycaster(), markers: [], theta: 0.6, phi: Math.PI - 0.55, distance: 3.2,
+        raycaster: new THREE.Raycaster(), markers: [], surfaceMeshes: [placeholder], theta: 0.6, phi: Math.PI - 0.55, distance: 3.2,
         sunlight, sunMarker, earthMarker,
       };
       moon.add(world.markerGroup);
@@ -233,7 +187,8 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
           setPending(null);
           return;
         }
-        const hit = raycast(event, [moon])[0];
+        if (!world.surfaceMeshes.length) return;
+        const hit = raycast(event, world.surfaceMeshes)[0];
         if (!hit) return;
         const point = moon.worldToLocal(hit.point.clone()).normalize();
         const lat = Math.asin(Math.max(-1, Math.min(1, point.y))) * 180 / Math.PI;
@@ -252,6 +207,33 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       canvas.addEventListener('pointerup', up);
       canvas.addEventListener('pointercancel', () => { drag = null; });
       canvas.addEventListener('wheel', wheel, { passive: false });
+      const loader = new THREE.GLTFLoader();
+      loader.load('/moon-nasa-small.glb', (gltf: any) => {
+        if (cancelled) return;
+        placeholder.geometry.dispose();
+        placeholder.material.dispose();
+        moon.remove(placeholder);
+        const surface = new THREE.Group();
+        surface.scale.setScalar(1 / 1.271865);
+        surface.add(gltf.scene);
+        const meshes: any[] = [];
+        surface.traverse((object: any) => {
+          if (!object.isMesh) return;
+          meshes.push(object);
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          for (const material of materials) {
+            material.roughness = 1;
+            material.metalness = 0;
+            material.needsUpdate = true;
+          }
+        });
+        moon.add(surface);
+        world.surfaceMeshes = meshes;
+        setLoadProgress(100);
+        setModelReady(true);
+      }, (event: ProgressEvent) => {
+        if (event.total > 0) setLoadProgress(Math.round(event.loaded / event.total * 100));
+      }, () => { if (!cancelled) setFailed(true); });
       const animate = () => { if (cancelled) return; frame = requestAnimationFrame(animate); renderer.render(scene, camera); };
       animate();
     }).catch(() => { if (!cancelled) setFailed(true); });
@@ -262,12 +244,15 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       observer?.disconnect();
       worldRef.current?.scene.traverse((object: any) => {
         object.geometry?.dispose();
-        if (Array.isArray(object.material)) object.material.forEach((material: any) => material.dispose());
-        else object.material?.dispose();
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        for (const material of materials) {
+          if (!material) continue;
+          for (const value of Object.values(material)) if ((value as any)?.isTexture) (value as any).dispose();
+          material.dispose();
+        }
       });
       worldRef.current = null;
       if (renderer) { renderer.dispose(); renderer.domElement.remove(); }
-      texture?.dispose();
       starGeometry?.dispose();
       starMaterial?.dispose();
     };
@@ -347,7 +332,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
   return <div className="overflow-hidden rounded-md border border-hairline bg-[#05060a]">
     <div className="relative h-[340px] sm:h-[430px] lg:h-[480px]">
       <div ref={hostRef} className="size-full" />
-      {!worldReady && <div className="pointer-events-none absolute inset-0 grid place-items-center bg-[#05060a]/80 text-xs text-white/70">Building the lunar surface…</div>}
+      {(!worldReady || !modelReady) && <div className="absolute inset-0 z-10 grid place-items-center bg-[#05060a]/80 text-xs text-white/80">Loading NASA lunar surface… {loadProgress}%</div>}
       <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-md border border-white/10 bg-black/40 px-2.5 py-2 text-[10px] text-white/75 backdrop-blur"><Compass className="size-3.5 text-primary" /> SOUTH POLE VIEW <span className="text-white/35">·</span> DRAG TO ORBIT</div>
       <div className="absolute right-3 top-3 flex gap-1.5"><Button size="icon" variant="outline" className="size-8 border-white/15 bg-black/45 text-white hover:bg-white/15" aria-label="Zoom out" onClick={() => zoom(0.5)}>−</Button><Button size="icon" variant="outline" className="size-8 border-white/15 bg-black/45 text-white hover:bg-white/15" aria-label="Zoom in" onClick={() => zoom(-0.5)}>+</Button><Button size="icon" variant="outline" className="size-8 border-white/15 bg-black/45 text-white hover:bg-white/15" aria-label="Reset Moon view" onClick={reset}><RotateCcw className="size-3.5" /></Button></div>
       {hovered && <div className="pointer-events-none absolute bottom-3 right-3 rounded-md bg-black/55 px-2.5 py-2 text-xs text-white/85 backdrop-blur">{hovered}</div>}
@@ -357,6 +342,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       {pending
         ? <><span className="font-mono text-foreground">Custom point · {Math.abs(pending.lat).toFixed(2)}°{pending.lat < 0 ? 'S' : 'N'}, {Math.abs(pending.lon).toFixed(2)}°{pending.lon < 0 ? 'W' : 'E'}</span><Button size="sm" onClick={() => { onAdd(pending.lat, pending.lon); setPending(null); }}><Plus />Add landing site</Button><Button size="sm" variant="ghost" onClick={() => setPending(null)}>Cancel</Button></>
         : <span>Drag to rotate · scroll or use + / − to zoom · click a marker to focus it · click an open spot to preview and add a custom site. Sun and Earth positions follow the mission timeline.</span>}
+      <a href="https://svs.gsfc.nasa.gov/14959/" target="_blank" rel="noopener noreferrer" className="ml-auto text-[10px] text-muted-foreground underline decoration-white/20 underline-offset-2 hover:text-foreground">Surface model: NASA GSFC / LRO</a>
     </div>
   </div>;
 }
