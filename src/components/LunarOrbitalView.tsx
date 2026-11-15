@@ -155,8 +155,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
     trackGroup.add(siteMarker);
 
     const bodyPosition = (body: 'sun' | 'earth', sample: Sample) => {
-      const visible = body === 'sun' ? sample.sunUp : sample.earthUp;
-      const altitude = body === 'sun' ? sample.sunAlt : (!visible ? Math.max(sample.earthAlt, 12) : sample.earthAlt);
+      const altitude = body === 'sun' ? sample.sunAlt : sample.earthAlt;
       const azimuth = body === 'sun' ? sample.sunAz : sample.earthAz;
       return basis.up.clone().add(apparentDirection(THREE, basis, altitude, azimuth).multiplyScalar(ORBIT_SCALE[body]));
     };
@@ -179,8 +178,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
     for (const child of [...bodyGroup.children]) { bodyGroup.remove(child); child.geometry?.dispose(); child.material?.dispose(); }
     const basis = lunarPosition(THREE, analysis.site.lat, analysis.site.lon);
     const bodyPosition = (body: 'sun' | 'earth', sample: Sample) => {
-      const visible = body === 'sun' ? sample.sunUp : sample.earthUp;
-      const altitude = body === 'sun' ? sample.sunAlt : (!visible ? Math.max(sample.earthAlt, 12) : sample.earthAlt);
+      const altitude = body === 'sun' ? sample.sunAlt : sample.earthAlt;
       const azimuth = body === 'sun' ? sample.sunAz : sample.earthAz;
       return basis.up.clone().add(apparentDirection(THREE, basis, altitude, azimuth).multiplyScalar(ORBIT_SCALE[body]));
     };
@@ -193,10 +191,11 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
       marker.renderOrder = 5;
       marker.position.copy(position);
       bodyGroup.add(marker);
-      const tether = new THREE.Line(new THREE.BufferGeometry().setFromPoints([basis.up.clone().multiplyScalar(1.015), position]), new THREE.LineDashedMaterial({ color, dashSize: 0.08, gapSize: 0.055, transparent: true, opacity: visible ? 0.52 : 0.3, depthTest: false }));
-      tether.renderOrder = 4;
-      tether.computeLineDistances();
-      bodyGroup.add(tether);
+      if (body === 'sun') {
+        const tether = new THREE.Line(new THREE.BufferGeometry().setFromPoints([basis.up.clone().multiplyScalar(1.015), position]), new THREE.LineDashedMaterial({ color, dashSize: 0.08, gapSize: 0.055, transparent: true, opacity: 0.52 }));
+        tether.computeLineDistances();
+        bodyGroup.add(tether);
+      }
       if (body === 'sun') { const glow = new THREE.PointLight(color, 1.2, 3); glow.position.copy(position); bodyGroup.add(glow); }
     }
   }, [analysis.site.lat, analysis.site.lon, current, ready]);
@@ -209,7 +208,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
     <div className="pointer-events-none absolute left-3 top-3 max-w-[72%] rounded-lg border border-white/10 bg-black/40 px-3 py-2 backdrop-blur"><p className="font-mono text-[9px] uppercase tracking-wider text-white/75">3D orbital view <span className="text-white/30">·</span> {analysis.site.name}</p><p className="mt-1 text-[9px] text-white/50">LRO surface · orbital distances compressed</p></div>
     <button type="button" onClick={reset} aria-label="Reset three dimensional orbital view" className="absolute right-3 top-3 grid size-8 place-items-center rounded-lg border border-white/10 bg-black/40 text-white/75 backdrop-blur hover:bg-white/10"><RotateCcw className="size-3.5" /></button>
     <div className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-2"><span className="rounded-md border border-white/10 bg-black/45 px-2.5 py-1.5 font-mono text-[9px] text-sun">☀ SUN {current?.sunAlt.toFixed(1)}°</span><span className="rounded-md border border-white/10 bg-black/45 px-2.5 py-1.5 font-mono text-[9px] text-earth">● EARTH {current?.earthAlt.toFixed(1)}°</span><span className="rounded-md border border-white/10 bg-black/45 px-2.5 py-1.5 font-mono text-[9px] text-primary">◉ SITE</span></div>
-    {!current?.earthUp && <div className="pointer-events-none absolute right-3 top-[58px] rounded-md border border-earth/25 bg-black/65 px-2.5 py-1.5 font-mono text-[9px] text-earth/80">EARTH BELOW HORIZON · MARKER RAISED FOR VISIBILITY</div>}
+    {!current?.earthUp && <div className="pointer-events-none absolute right-3 top-[58px] rounded-md border border-earth/25 bg-black/65 px-2.5 py-1.5 font-mono text-[9px] text-earth/80">EARTH BELOW HORIZON · BODY SHOWN IN ORBIT VIEW</div>}
     <div className="pointer-events-none absolute bottom-3 right-3 hidden gap-3 rounded-md border border-white/10 bg-black/45 px-3 py-2 text-[9px] text-white/65 sm:flex"><span className="text-sun">Sun path</span><span className="text-earth">Earth path</span><span className="text-primary">Observer site</span></div>
   </div>;
 }
