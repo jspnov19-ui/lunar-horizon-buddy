@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { SkyDome } from "@/components/SkyDome";
 import { SITES } from "@/lib/sites";
 import { formatDuration, formatUTC, sampleSite } from "@/lib/analysis";
 import { LunarTools } from '@/components/LunarTools';
@@ -106,10 +105,7 @@ function HowItWorksPage() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-[300px_minmax(0,1fr)]">
-          <div className="glass-panel rounded-lg p-4">
-            <SkyDome analysis={demo} index={index} />
-          </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="glass-panel flex flex-col justify-between rounded-lg p-5">
             <div>
               <p className="font-mono text-xs text-muted-foreground">

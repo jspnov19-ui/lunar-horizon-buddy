@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
-import { SkyDome } from "@/components/SkyDome";
 import { LunarOrbitalView } from "@/components/LunarOrbitalView";
 import { ElevationChart } from "@/components/ElevationChart";
 import { TimelineStrip } from "@/components/TimelineStrip";
@@ -214,13 +213,10 @@ function ModelsPage() {
                     </span>
                   </div>
                 </div>
-                <div
-                  className={`grid flex-1 gap-4 rounded-xl border border-border bg-background/60 p-4 ${
-                    compare ? "md:grid-cols-2" : ""
-                  }`}
-                >
-                  <SkyDome analysis={primary} index={index} />
-                  {compare && <SkyDome analysis={compare} index={index} />}
+                <div className="flex flex-1 flex-col justify-between gap-4 rounded-xl border border-border bg-background/60 p-5">
+                  <div><p className="label-caps text-primary">Local surface outlook</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Sun and Earth elevation change across the selected mission window. Compare their visibility and terrain limits in the surface simulator.</p></div>
+                  <div className="grid grid-cols-2 gap-3 font-mono text-xs"><span className="rounded-lg border border-white/10 bg-white/[0.025] p-3 text-sun">SUN · {primary.samples[index]?.sunAlt.toFixed(1)}°</span><span className="rounded-lg border border-white/10 bg-white/[0.025] p-3 text-earth">EARTH · {primary.samples[index]?.earthAlt.toFixed(1)}°</span></div>
+                  <Link to="/simulator" className="text-xs text-primary underline-offset-4 hover:underline">Open the interactive surface view →</Link>
                 </div>
               </div>
 
