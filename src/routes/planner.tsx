@@ -16,7 +16,7 @@ import { TermHelp } from '@/components/TermHelp';
 export const Route = createFileRoute('/planner')({
   head: () => ({ meta: [
     { title: 'Mission Planner — Lunar South Pole Analysis' },
-    { name: 'description', content: 'Pick a lunar south-pole landing site on a map, choose dates, and see sunlight and Earth-contact windows checked against NASA data.' },
+    { name: 'description', content: 'Choose a lunar south-pole landing site on an interactive 3D Moon, set dates, and compare sunlight and Earth-contact windows.' },
     { property: 'og:title', content: 'Mission Planner — Lunar South Pole Analysis' },
     { property: 'og:description', content: 'Accessible lunar site, date, power and communication comparisons.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' },
@@ -75,18 +75,18 @@ function PlannerPage() {
     <header className="mb-8">
       <p className="label-caps text-primary">Lunar operations / planning</p>
       <h1 className="mt-3 text-3xl font-semibold md:text-4xl">Where should we land, and when?</h1>
-      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">Three steps: pick a site on the map, choose your dates, then read the result. Everything, including the NASA check, is on this page.</p>
+      <p className="mt-3 max-w-2xl text-sm text-muted-foreground">Three steps: rotate the Moon to pick a site, choose your dates, then read the result. Everything, including the NASA check, is on this page.</p>
     </header>
 
     <section aria-labelledby="step-1" className="mb-10">
       <SectionTitle id="step-1" n="1" title="Pick a landing site" />
       <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <PolarMap sites={sites} selected={selected} detailId={detail?.site.id ?? detailId} onPick={pickSite} onAdd={addFromMap} />
+        <PolarMap sites={sites} selected={selected} detailId={detail?.site.id ?? detailId} currentTimeMs={startMs + (index / STEPS) * days * 86400000} onPick={pickSite} onAdd={addFromMap} />
         <div>
           <div className="mb-3 flex justify-between text-xs text-muted-foreground"><span>{selected.length} of {sites.length} included in the comparison</span><Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelected(selected.length === sites.length ? [] : sites.map(s => s.id))}>{selected.length === sites.length ? 'Clear' : 'Select all'}</Button></div>
-          <div className="max-h-[460px] space-y-3 overflow-auto pr-1">{sites.map(s => <label key={s.id} className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed"><input type="checkbox" className="mt-1 accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span>{s.name}<span className="block font-mono text-[10px] text-muted-foreground">{s.lat.toFixed(2)}° · {s.lon.toFixed(2)}°E</span></span></label>)}</div>
+          <div className="max-h-[460px] space-y-3 overflow-auto pr-1">{sites.map(s => <label key={s.id} className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed"><input type="checkbox" className="mt-1 accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span>{s.name}<span className="block font-mono text-[10px] text-muted-foreground">{Math.abs(s.lat).toFixed(2)}°{s.lat < 0 ? 'S' : 'N'} · {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? 'W' : 'E'}</span></span></label>)}</div>
           {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
-          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">Sites you add from the map assume a flat horizon (0°). Built-in sites use illustrative terrain.</p>
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">Sites you plot on the globe use a flat 0° horizon. Built-in sites use illustrative terrain masks.</p>
         </div>
       </div>
     </section>
