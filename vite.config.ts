@@ -13,7 +13,7 @@ export default defineConfig({
   },
   vite: {
     server: {
-      allowedHosts: ["sb-676uelwfmixo.vercel.run"],
+      allowedHosts: ["sb-676uelwfmixo.vercel.run","sb-cqojskvyaqji.vercel.run"],
     },
   },
 });
