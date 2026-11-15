@@ -183,8 +183,8 @@
 }
 
 :root { color-scheme: dark; }
-main { animation: page-enter 220ms ease-out; }
-@keyframes page-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+main { animation: mission-arrive 620ms cubic-bezier(.2,.75,.25,1) both; }
+@keyframes mission-arrive { from { opacity: 0; transform: translateY(12px) scale(.992); filter: blur(3px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
 /* Shared visual language for the visitor-facing landing and mission planning pages. */
@@ -254,12 +254,16 @@ main { animation: page-enter 220ms ease-out; }
 .planner-stage-heading { padding: 0 2px; }
 .planner-stage-frame { position: relative; overflow: hidden; border: 1px solid rgb(255 255 255 / 11%); border-radius: 24px; background: #07090d; box-shadow: 0 28px 90px rgb(0 0 0 / 34%), 0 0 70px rgb(255 197 104 / 3%); }
 .planner-terrain-canvas { border: 0; border-radius: 0; }
+.planner-terrain-canvas [data-terrain-canvas] { position: relative; background-color: #080a0e; background-image: radial-gradient(1px 1px at 12% 18%, rgb(210 225 255 / 65%) 45%, transparent), radial-gradient(1px 1px at 81% 26%, rgb(255 255 255 / 50%) 45%, transparent), radial-gradient(1px 1px at 62% 13%, rgb(255 255 255 / 45%) 45%, transparent), linear-gradient(180deg, #090d15, #11151b 72%); }
+.planner-terrain-canvas [data-terrain-canvas]::after { position: absolute; inset: 0; border: 1px solid rgb(255 255 255 / 3%); background: linear-gradient(180deg, transparent 55%, rgb(0 0 0 / 22%)); content: ""; pointer-events: none; }
 .planner-terrain-canvas [data-terrain-canvas] { height: clamp(390px, 52vw, 590px); }
 .planner-stage-vignette { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(3 5 8 / 53%), transparent 26%, transparent 53%, rgb(3 5 8 / 82%)), linear-gradient(90deg, rgb(3 5 8 / 30%), transparent 28%, transparent 72%, rgb(3 5 8 / 22%)); }
 .planner-stage-readout { position: absolute; z-index: 2; display: flex; align-items: center; gap: 9px; border: 1px solid rgb(255 255 255 / 11%); border-radius: 999px; background: rgb(7 10 14 / 60%); padding: 9px 13px; color: rgb(255 255 255 / 77%); font: 600 9px/1.2 var(--font-mono); letter-spacing: .1em; backdrop-filter: blur(14px); }
 .planner-stage-readout-top { top: 18px; left: 18px; }
 .planner-live-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: #51d4b8; box-shadow: 0 0 12px rgb(81 212 184 / 65%); }
 .planner-stage-readout-bottom { right: 18px; bottom: 18px; left: 18px; justify-content: space-between; align-items: flex-end; border-radius: 17px; padding: 14px 16px; letter-spacing: 0; }
+.planner-stage-controls { min-width: min(100%, 340px); max-width: 600px; flex: 1; }
+.planner-stage-scrubber { height: 4px; cursor: ew-resize; accent-color: #ffc568; }
 .planner-stage-stats { display: flex; gap: clamp(14px, 3vw, 36px); }
 .planner-stage-stats > span { display: flex; min-width: 96px; flex-direction: column; gap: 4px; }
 .planner-stage-stats b { font-size: 16px; font-weight: 600; }
@@ -271,6 +275,18 @@ main { animation: page-enter 220ms ease-out; }
 .planner-custom-crosshair span { position: absolute; top: 50%; left: 50%; width: 9px; height: 9px; transform: translate(-50%, -50%); border: 2px solid #76cdf4; border-radius: 50%; box-shadow: 0 0 20px #76cdf4; }
 .site-selector { background: linear-gradient(160deg, rgb(255 255 255 / 3%), rgb(255 255 255 / 1%)); }
 .site-choice-active { border-color: rgb(255 197 104 / 24%); background: linear-gradient(100deg, rgb(255 197 104 / 8%), rgb(255 255 255 / 2%)); }
+.site-choice-active { box-shadow: inset 2px 0 #ffc568, 0 0 28px rgb(255 197 104 / 5%); }
+.site-choice { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+.site-choice:hover { transform: translateX(3px); }
+.lunar-globe-frame canvas, [data-terrain-canvas] canvas { cursor: crosshair !important; }
+.lunar-globe-frame { position: relative; overflow: hidden; }
+.lunar-globe-frame::after { position: absolute; inset: 12px; border: 1px solid rgb(255 255 255 / 4%); border-radius: inherit; content: ""; pointer-events: none; }
+.landing-hero img { animation: horizon-reveal 1.8s cubic-bezier(.2,.75,.25,1) both; }
+@keyframes horizon-reveal { from { opacity: .35; transform: scale(1.045); filter: brightness(.55); } to { opacity: 1; transform: scale(1); filter: brightness(1); } }
+.mission-glance { animation: panel-reveal 700ms 280ms cubic-bezier(.2,.75,.25,1) both; }
+@keyframes panel-reveal { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.terrain-loading { overflow: hidden; background: linear-gradient(110deg, #090c12 20%, #17202b 38%, #090c12 56%); background-size: 220% 100%; animation: terrain-scan 1.8s ease-in-out infinite; }
+@keyframes terrain-scan { to { background-position-x: -220%; } }
 .tour-heading { background: radial-gradient(ellipse at 100% 0%, rgb(75 209 191 / 10%), transparent 46%), linear-gradient(145deg, rgb(255 255 255 / 3%), transparent); }
 .site-nav { background: rgb(8 10 15 / 88%); backdrop-filter: blur(18px); }
 .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgb(77 206 190 / 24%); border-radius: 11px; background: linear-gradient(145deg, rgb(77 206 190 / 12%), rgb(255 255 255 / 2%)); box-shadow: inset 0 1px rgb(255 255 255 / 5%); }
@@ -283,6 +299,7 @@ main { animation: page-enter 220ms ease-out; }
   .landing-hero { min-height: 700px; }
   .planner-terrain-canvas [data-terrain-canvas] { height: 410px; }
   .planner-stage-readout-bottom { right: 10px; bottom: 10px; left: 10px; align-items: stretch; flex-direction: column; border-radius: 14px; }
+  .planner-stage-controls { max-width: none; }
   .planner-stage-stats { justify-content: space-between; gap: 8px; }
   .planner-stage-stats > span { min-width: 0; flex: 1; }
   .planner-stage-stats b { font-size: 13px; }

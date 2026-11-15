@@ -28,6 +28,8 @@ type ThreeWorld = {
   surfaceMeshes: any[];
   theta: number;
   phi: number;
+  targetTheta: number;
+  targetPhi: number;
   distance: number;
   sunlight: any;
   sunMarker: any;
@@ -99,7 +101,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       const world: ThreeWorld = {
         THREE, renderer, scene, camera, moon, markerGroup: new THREE.Group(),
         raycaster: new THREE.Raycaster(), markers: [], surfaceMeshes: [placeholder], theta: 0.6, phi: Math.PI - 0.55, distance: 3.2,
-        sunlight, sunMarker, earthMarker,
+        sunlight, sunMarker, earthMarker, targetTheta: 0.6, targetPhi: Math.PI - 0.55,
       };
       moon.add(world.markerGroup);
       worldRef.current = world;
@@ -136,6 +138,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
           drag.x = event.clientX; drag.y = event.clientY;
           world.theta -= dx * 0.006;
           world.phi = Math.max(0.05, Math.min(3.09, world.phi - dy * 0.006));
+          world.targetTheta = world.theta; world.targetPhi = world.phi;
           updateCamera();
           return;
         }
@@ -200,7 +203,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
       }, (event: ProgressEvent) => {
         if (event.total > 0) setLoadProgress(Math.round(event.loaded / event.total * 100));
       }, () => { if (!cancelled) setFailed(true); });
-      const animate = () => { if (cancelled) return; frame = requestAnimationFrame(animate); renderer.render(scene, camera); };
+      const animate = () => { if (cancelled) return; frame = requestAnimationFrame(animate); world.theta += Math.atan2(Math.sin(world.targetTheta - world.theta), Math.cos(world.targetTheta - world.theta)) * 0.045; world.phi += (world.targetPhi - world.phi) * 0.045; updateCamera(); renderer.render(scene, camera); };
       animate();
     }).catch(() => { if (!cancelled) setFailed(true); });
 
@@ -242,6 +245,12 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
   useEffect(() => {
     const world = worldRef.current;
     if (!worldReady || !world) return;
+    const selectedSite = sites.find(site => site.id === detailId);
+    if (selectedSite) {
+      const point = siteVector(world.THREE, selectedSite);
+      world.targetTheta = Math.atan2(point.x, point.z);
+      world.targetPhi = Math.max(0.08, Math.min(3.06, Math.acos(point.y)));
+    }
     const { THREE, markerGroup } = world;
     for (const child of [...markerGroup.children]) {
       markerGroup.remove(child);
@@ -280,7 +289,7 @@ export function LunarGlobe({ sites, selected, detailId, currentTimeMs, onPick, o
   const reset = () => {
     const world = worldRef.current;
     if (!world) return;
-    world.theta = 0.6; world.phi = Math.PI - 0.55; world.distance = 3.2;
+    world.theta = 0.6; world.phi = Math.PI - 0.55; world.targetTheta = world.theta; world.targetPhi = world.phi; world.distance = 3.2;
     world.camera.position.set(world.distance * Math.sin(world.phi) * Math.sin(world.theta), world.distance * Math.cos(world.phi), world.distance * Math.sin(world.phi) * Math.cos(world.theta));
     world.camera.lookAt(0, 0, 0);
     setPending(null);
