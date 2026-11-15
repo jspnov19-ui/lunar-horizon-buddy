@@ -27,8 +27,6 @@ function LandingPage() {
       <LolaTerrain siteId="de-gerlache-rim" siteName="de Gerlache Rim 2" className="absolute inset-0 z-[-1] rounded-none border-0 [&_[data-terrain-canvas]]:!h-full" />
       <div className="landing-hero-shade absolute inset-0 -z-10" />
       <div className="landing-stars absolute inset-0 -z-10" aria-hidden="true" />
-      <div className="pointer-events-none absolute left-[58%] top-[23%] z-0 hidden md:block" aria-hidden="true"><span className="block size-9 rounded-full bg-[radial-gradient(circle_at_35%_35%,#fff4cf,#ffc66d_52%,#d78038)] shadow-[0_0_34px_12px_rgb(255_190_98_/_24%)]"/><span className="absolute left-12 top-2 whitespace-nowrap font-mono text-[9px] uppercase tracking-[.2em] text-sun/80">Sun · low on horizon</span></div>
-      <div className="pointer-events-none absolute right-[36%] top-[34%] z-0 hidden md:block" aria-hidden="true"><span className="block size-5 rounded-full bg-[radial-gradient(circle_at_32%_30%,#e8f5ff,#75bce9_48%,#28558d)] shadow-[0_0_24px_8px_rgb(104_180_246_/_22%)]"/><span className="absolute left-8 top-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[.2em] text-earth/80">Earth · in the lunar sky</span></div>
       <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-16 md:min-h-[690px] md:grid-cols-[minmax(0,1fr)_330px] md:px-8 md:py-20">
         <div className="max-w-3xl">
           <p className="label-caps inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-2 text-white/85 backdrop-blur"><span className="size-1.5 rounded-full bg-sun shadow-[0_0_12px_var(--sun)]" />Lunar south pole <span className="text-white/40">/</span> Mission design</p>
