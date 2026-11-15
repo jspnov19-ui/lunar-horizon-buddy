@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { SkyDome } from "@/components/SkyDome";
 import { SITES } from "@/lib/sites";
 import { formatDuration, formatUTC, sampleSite } from "@/lib/analysis";
+import { LunarTools } from '@/components/LunarTools';
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
@@ -156,6 +157,11 @@ function HowItWorksPage() {
         </div>
       </section>
 
+      <section className="mt-12 border-t border-hairline pt-10">
+        <h2 className="text-2xl font-bold">From screening to real lunar data</h2>
+        <p className="mb-5 mt-3 text-sm leading-relaxed text-muted-foreground">Start with a comparison here, inspect the landscape in ASU’s LROC QuickMap and NASA Moon Trek, then check Sun and Earth positions in JPL Horizons. These external tools do not replace the illustrative terrain or approximate positions in this app automatically. A terrain map alone is not a surveyed horizon profile.</p>
+        <LunarTools site={demo.site} startMs={startMs} days={29.53} />
+      </section>
       <section className="mt-12 border-t border-hairline pt-10">
         <h2 className="text-2xl font-bold">What the planner does with this</h2>
         <ol className="mt-5 flex flex-col gap-4">

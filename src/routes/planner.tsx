@@ -8,6 +8,9 @@ import { SITES, type LandingSite } from '@/lib/sites';
 import { formatDuration, formatUTC, sampleSite, type SiteAnalysis } from '@/lib/analysis';
 import { customSite, nextTransition, rankSites, type Priority } from '@/lib/planning';
 import { exportReportJson, exportSummaryCsv, exportTimeseriesCsv } from '@/lib/export';
+import { LunarTools } from '@/components/LunarTools';
+import { MissionSummary } from '@/components/MissionSummary';
+import { TermHelp } from '@/components/TermHelp';
 
 export const Route = createFileRoute('/planner')({
   head: () => ({ meta: [
@@ -64,7 +67,7 @@ function PlannerPage() {
   return <main className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
     <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
       <div><p className="label-caps text-primary">Lunar operations / planning</p><h1 className="mt-3 text-3xl font-semibold md:text-4xl">Mission planner</h1><p className="mt-3 text-sm text-muted-foreground">Compare locations. Test a new date. Understand the trade-offs.</p></div>
-      <Button variant="outline" asChild><Link to="/how-it-works">How it works <ArrowRight /></Link></Button>
+      <div className="flex flex-wrap gap-2">{detail && <LunarTools site={detail.site} startMs={startMs} days={days} />}<Button variant="outline" asChild><Link to="/how-it-works">How it works <ArrowRight /></Link></Button></div>
     </header>
     <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="min-w-0 space-y-7 lg:border-r lg:border-hairline lg:pr-7">
@@ -82,6 +85,7 @@ function PlannerPage() {
         </section>
       </aside>
       <div className="min-w-0">
+        {detail && <MissionSummary analysis={detail} alternatives={ranked} />}
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Site comparison</h2><span className="font-mono text-xs text-muted-foreground">{days} DAYS / {compare ? '2 WINDOWS' : '1 WINDOW'}</span></div>
         <p className="mb-5 border-l-2 border-primary pl-3 text-xs leading-relaxed text-muted-foreground">Screening estimates, not flight-certified. Curated terrain masks are illustrative; custom sites use your constant horizon. Rankings measure visibility, not electrical output or link margin.</p>
         {ranked.length === 0 ? <div className="border-y border-hairline py-16 text-center text-muted-foreground">Select at least one site and a valid date to compare mission windows.</div> : <>
