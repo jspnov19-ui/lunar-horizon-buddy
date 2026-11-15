@@ -3,26 +3,26 @@ import { ChevronDown, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickStartTour } from "@/components/QuickStartTour";
 
-const MAIN = [
-  { to: "/", label: "Overview" },
-  { to: "/planner", label: "Planner" },
-] as const;
 const LEARN = [
   { to: "/how-it-works", label: "How it works" },
-  { to: "/models", label: "Models" },
-  { to: "/methods", label: "Methods" },
+  { to: "/models", label: "Interactive models" },
+  { to: "/methods", label: "Data & methods" },
 ] as const;
 
 export function NavBar() {
   return (
     <header className="sticky top-0 z-50 border-b border-hairline bg-background/95 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-8">
-        <Link to="/" className="flex items-center gap-3">
-          <Moon className="size-6 text-primary" />
-          <span className="font-display text-base font-semibold">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
+        <Link
+          to="/"
+          className="flex min-w-0 items-center gap-2.5"
+          aria-label="Lunar South Pole Analysis home"
+        >
+          <Moon aria-hidden="true" className="size-6 shrink-0 text-primary" />
+          <span className="truncate font-display text-sm font-semibold sm:text-base">
             Lunar South Pole
             <span className="ml-2 hidden text-xs font-normal text-muted-foreground sm:inline">
-              / Analysis
+              / Mission analysis
             </span>
           </span>
         </Link>
@@ -30,32 +30,40 @@ export function NavBar() {
           aria-label="Main navigation"
           className="flex w-full flex-wrap items-center gap-1 sm:w-auto"
         >
-          {MAIN.map((l) => (
-            <Button key={l.to} variant="ghost" size="sm" asChild className="px-2 md:px-3">
-              <Link
-                to={l.to}
-                activeOptions={{ exact: l.to === "/" }}
-                className="text-muted-foreground"
-                activeProps={{ className: "bg-secondary text-primary" }}
-              >
-                {l.label}
-              </Link>
-            </Button>
-          ))}
-          <details className="relative">
-            <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1 rounded-md px-2 text-sm text-muted-foreground hover:bg-secondary md:px-3">
-              Learn
-              <ChevronDown className="size-3.5" />
+          <Button variant="ghost" size="sm" asChild>
+            <Link
+              to="/"
+              activeOptions={{ exact: true }}
+              activeProps={{ className: "bg-secondary text-primary" }}
+            >
+              Overview
+            </Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link
+              to="/planner"
+              activeProps={{ className: "bg-primary/90 text-primary-foreground" }}
+            >
+              Plan a mission
+            </Link>
+          </Button>
+          <details className="group relative">
+            <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1 rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+              Learn &amp; explore
+              <ChevronDown
+                aria-hidden="true"
+                className="size-3.5 transition-transform group-open:rotate-180"
+              />
             </summary>
-            <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-hairline bg-background p-1 shadow-lg">
-              {LEARN.map((l) => (
+            <div className="absolute right-0 z-50 mt-2 w-52 rounded-md border border-hairline bg-background p-1 shadow-lg">
+              {LEARN.map((item) => (
                 <Link
-                  key={l.to}
-                  to={l.to}
-                  className="block rounded px-3 py-2 text-sm text-muted-foreground hover:bg-secondary"
+                  key={item.to}
+                  to={item.to}
+                  className="block rounded px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   activeProps={{ className: "bg-secondary text-primary" }}
                 >
-                  {l.label}
+                  {item.label}
                 </Link>
               ))}
             </div>

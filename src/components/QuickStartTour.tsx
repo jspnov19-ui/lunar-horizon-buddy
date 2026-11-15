@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,13 +31,6 @@ export function QuickStartTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [index, setIndex] = useState(0);
-  useEffect(() => {
-    try {
-      setOpen(localStorage.getItem("lunar-tour-dismissed") !== "yes");
-    } catch {
-      setOpen(true);
-    }
-  }, []);
   const site = SITES[0];
   const demo = site ? sampleSite(site, Date.UTC(2026, 10, 7), 29.53, 60) : null;
   const current = STEPS[step];
@@ -76,21 +69,7 @@ export function QuickStartTour() {
               />
             </div>
           )}
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-hairline pt-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                try {
-                  localStorage.setItem("lunar-tour-dismissed", "yes");
-                } catch {
-                  /* Tour remains available without browser storage. */
-                }
-                setOpen(false);
-              }}
-            >
-              Don’t show again
-            </Button>
+          <div className="flex justify-end gap-2 border-t border-hairline pt-4">
             <div className="flex gap-2">
               {step > 0 && (
                 <Button

@@ -145,8 +145,26 @@ function MethodsPage() {
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
           Every number in this tool comes from geometry computed in the browser — no precomputed
           tables, no server round trip. This page documents the chain from ephemeris to mission
-          statistic, and is explicit about where the model's confidence ends.
+          statistic, and is explicit about where the model&apos;s confidence ends.
         </p>
+        <aside className="mt-6 rounded-lg border border-primary/25 bg-primary/5 p-4 sm:p-5">
+          <h2 className="text-sm font-semibold">In brief</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            The planner estimates when sunlight and Earth are visible above a representative local
+            horizon, then summarizes the sampled windows. The orbital geometry is approximate and
+            the terrain profiles are illustrative—not surveyed—so use results to compare ideas, not
+            to certify a landing or communications link.
+          </p>
+          <Link
+            to="/planner"
+            className="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+          >
+            Compare candidate sites{" "}
+            <span aria-hidden="true" className="ml-1">
+              →
+            </span>
+          </Link>
+        </aside>
 
         {/* Pipeline */}
         <section className="mt-12">

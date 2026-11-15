@@ -54,7 +54,7 @@ function LandingPage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link to="/planner">
-                Open planner <ArrowRight />
+                Start planning <ArrowRight />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
@@ -62,16 +62,16 @@ function LandingPage() {
             </Button>
           </div>
           <p className="mt-10 font-mono text-xs text-foreground/75">
-            {SITES.length} candidate regions · Custom coordinates · Alternate dates · CSV & JSON
-            exports
+            Compare {SITES.length} candidate regions · Add coordinates · Test alternate dates ·
+            Export the underlying data
           </p>
         </div>
       </section>
       <section className="mx-auto max-w-7xl px-4 py-10 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="label-caps text-primary">The decision workspace</p>
-            <h2 className="mt-3 text-2xl font-semibold">One mission. Multiple possibilities.</h2>
+            <p className="label-caps text-primary">A simple path to a better-informed shortlist</p>
+            <h2 className="mt-3 text-2xl font-semibold">From landing site to mission windows</h2>
           </div>
           <Button asChild variant="link">
             <Link to="/planner">

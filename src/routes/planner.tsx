@@ -147,14 +147,34 @@ function PlannerPage() {
       <header className="mb-8">
         <p className="label-caps text-primary">Lunar operations / planning</p>
         <h1 className="mt-3 text-3xl font-semibold md:text-4xl">Where should we land, and when?</h1>
-        <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-          Three steps: pick a site on the map, choose your dates, then read the result. Everything,
-          including the NASA check, is on this page.
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Start with the defaults: all candidate regions compared over one lunar cycle. Change the
+          site, dates, or priority only if your mission needs something different. Results update as
+          you go; no setup or account is needed.
         </p>
+        <nav aria-label="Planner steps" className="mt-5 flex flex-wrap gap-2 text-sm">
+          {[
+            ["#step-1", "1. Choose sites"],
+            ["#step-2", "2. Set mission dates"],
+            ["#step-3", "3. Compare results"],
+          ].map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className="rounded-full border border-hairline px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
       </header>
 
-      <section aria-labelledby="step-1" className="mb-10">
-        <SectionTitle id="step-1" n="1" title="Pick a landing site" />
+      <section aria-labelledby="step-1" className="mb-10 scroll-mt-28">
+        <SectionTitle id="step-1" n="1" title="Choose sites to compare" />
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          The map and list stay in sync. Every checked site is included in the ranking; select a
+          result later to inspect its timeline and sky view. All regions are included to start.
+        </p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <PolarMap
             sites={sites}
@@ -213,7 +233,10 @@ function PlannerPage() {
         </div>
       </section>
 
-      <section aria-labelledby="step-2" className="mb-10 border-t border-hairline pt-8">
+      <section
+        aria-labelledby="step-2"
+        className="mb-10 scroll-mt-28 border-t border-hairline pt-8"
+      >
         <SectionTitle id="step-2" n="2" title="Choose dates and priority" />
         <div className="mt-4 grid gap-5 md:grid-cols-3">
           <div>
@@ -278,7 +301,7 @@ function PlannerPage() {
         </div>
       </section>
 
-      <section aria-labelledby="step-3" className="border-t border-hairline pt-8">
+      <section aria-labelledby="step-3" className="scroll-mt-28 border-t border-hairline pt-8">
         <SectionTitle id="step-3" n="3" title="Read the result" />
         {ranked.length === 0 || !best || !detail ? (
           <div className="mt-4 border-y border-hairline py-16 text-center text-muted-foreground">

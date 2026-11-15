@@ -94,7 +94,14 @@ function ModelsPage() {
   return (
     <div className="grid-texture min-h-[calc(100vh-4rem)] bg-background p-4 md:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Advanced models</h1>
+        <div className="max-w-2xl">
+          <p className="label-caps text-primary">Explore the geometry</p>
+          <h1 className="mt-2 text-2xl font-semibold">Advanced models</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Scrub through a lunar month to see when the Sun and Earth clear local terrain. Compare
+            two regions and dates here; for a guided shortlist, start with the mission planner.
+          </p>
+        </div>
         <LunarTools site={primary.site} startMs={startMs} days={days} />
       </div>
       <MissionSummary
