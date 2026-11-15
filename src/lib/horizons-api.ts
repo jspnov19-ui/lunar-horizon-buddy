@@ -22,7 +22,7 @@ const cache = new Map<string, { at: number; value: HorizonsResult }>();
  * NASA. Returns {ok:false} instead of throwing so the UI can fall back.
  */
 export const fetchHorizons = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => schema.parse(input))
+  .validator((input: unknown) => schema.parse(input))
   .handler(async ({ data }): Promise<HorizonsResult> => {
     const key = JSON.stringify(data);
     const hit = cache.get(key);
