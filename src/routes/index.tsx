@@ -62,6 +62,15 @@ function LandingPage() {
         </div>
         <Button asChild variant="outline" className="h-auto rounded-2xl px-5 py-4"><Link to="/models" className="flex flex-col items-start gap-1"><span className="font-semibold">Explore the models <ArrowRight className="ml-1 inline size-4" /></span><span className="text-xs font-normal text-muted-foreground">See data sources and assumptions</span></Link></Button>
       </div>
+      <section className="mt-12 border-t border-hairline pt-9" aria-labelledby="nasa-resources-title">
+        <div className="max-w-2xl"><p className="label-caps text-primary">Continue with mission data</p><h2 id="nasa-resources-title" className="mt-2 text-2xl font-semibold">NASA tools for a closer look</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Use these independent resources to inspect terrain and check celestial positions for a selected lunar site.</p></div>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <ResourceCard title="Lunar terrain maps" source="LROC QuickMap · ASU / LRO" text="Inspect lunar imagery and topography around a selected built-in study site inside the Lunar Data Lab." />
+          <ResourceCard title="3D lunar exploration" source="NASA Moon Trek" text="Explore NASA’s interactive lunar map and available topographic layers from within the site." />
+          <ResourceCard title="Ephemeris cross-check" source="JPL Horizons" text="Request Sun and Earth positions for a selected site, then compare them against the app’s predictions." />
+        </div>
+        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">These tools open separately and do not automatically update the planner. This app’s visibility estimates use an approximate ephemeris and illustrative horizon masks; NASA terrain layers are for inspection and are not currently used to calculate planner rankings.</p>
+      </section>
       <p className="mt-7 max-w-4xl border-l-2 border-primary/40 pl-4 text-xs leading-relaxed text-muted-foreground">These are preliminary estimates, not flight-design results. Sun and Earth visibility calculations use an approximate ephemeris and illustrative horizon masks; the LOLA terrain previews are not currently used by those calculations. Visibility alone does not establish electrical output or a complete radio link.</p>
     </section>
   </main>;
@@ -75,4 +84,7 @@ function FeatureCard({ number, icon, title, text }: { number: string; icon: Reac
 }
 function DataPoint({ label, value, detail }: { label: string; value: string; detail: string }) {
   return <div><p className="label-caps text-muted-foreground">{label}</p><p className="mt-2 font-mono text-sm text-foreground">{value}</p><p className="mt-1 text-[11px] text-muted-foreground">{detail}</p></div>;
+}
+function ResourceCard({ title, source, text }: { title: string; source: string; text: string }) {
+  return <Link to="/data-lab" className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition hover:border-primary/30 hover:bg-white/[0.04]"><div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold text-foreground">{title}</h3><p className="mt-1 text-[10px] uppercase tracking-wider text-primary/80">{source}</p></div><ArrowRight className="size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-primary" /></div><p className="mt-3 text-xs leading-relaxed text-muted-foreground">{text}</p><span className="mt-4 block text-[10px] font-medium text-primary">Open Lunar Data Lab →</span></Link>;
 }

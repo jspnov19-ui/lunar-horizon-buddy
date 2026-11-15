@@ -15,6 +15,7 @@ import { Route as MethodsRouteImport } from './routes/methods'
 import { Route as ModelsRouteImport } from './routes/models'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as SimulatorRouteImport } from './routes/simulator'
+import { Route as DataLabRouteImport } from './routes/data-lab'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const SimulatorRoute = SimulatorRouteImport.update({
   path: '/simulator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataLabRoute = DataLabRouteImport.update({
+  id: '/data-lab',
+  path: '/data-lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/models': typeof ModelsRoute
   '/planner': typeof PlannerRoute
   '/simulator': typeof SimulatorRoute
+  '/data-lab': typeof DataLabRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/models': typeof ModelsRoute
   '/planner': typeof PlannerRoute
   '/simulator': typeof SimulatorRoute
+  '/data-lab': typeof DataLabRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +79,14 @@ export interface FileRoutesById {
   '/models': typeof ModelsRoute
   '/planner': typeof PlannerRoute
   '/simulator': typeof SimulatorRoute
+  '/data-lab': typeof DataLabRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator'
+  fullPaths: '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator' | '/data-lab'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator'
-  id: '__root__' | '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator'
+  to: '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator' | '/data-lab'
+  id: '__root__' | '/' | '/how-it-works' | '/methods' | '/models' | '/planner' | '/simulator' | '/data-lab'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -87,6 +96,7 @@ export interface RootRouteChildren {
   ModelsRoute: typeof ModelsRoute
   PlannerRoute: typeof PlannerRoute
   SimulatorRoute: typeof SimulatorRoute
+  DataLabRoute: typeof DataLabRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -133,6 +143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SimulatorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/data-lab': {
+      id: '/data-lab'
+      path: '/data-lab'
+      fullPath: '/data-lab'
+      preLoaderRoute: typeof DataLabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -143,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModelsRoute: ModelsRoute,
   PlannerRoute: PlannerRoute,
   SimulatorRoute: SimulatorRoute,
+  DataLabRoute: DataLabRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -3,7 +3,7 @@ import { ChevronDown, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QuickStartTour } from '@/components/QuickStartTour';
 
-const MAIN = [{ to: '/', label: 'Overview' }, { to: '/planner', label: 'Planner' }] as const;
+const MAIN = [{ to: '/', label: 'Overview' }, { to: '/planner', label: 'Planner' }, { to: '/data-lab', label: 'Data lab' }] as const;
 const LEARN = [{ to: '/how-it-works', label: 'How it works' }, { to: '/models', label: 'Models' }, { to: '/methods', label: 'Methods' }] as const;
 
 export function NavBar() {
