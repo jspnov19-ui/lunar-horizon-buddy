@@ -8,9 +8,9 @@ import { SITES } from "@/lib/sites";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Lunar South Pole | Mission planning in the lunar light" },
+      { title: "Lunar Mission Browser | Explore the lunar south pole" },
       { name: "description", content: "Explore lunar south-pole landing sites and compare sunlight and Earth-contact windows across mission dates." },
-      { property: "og:title", content: "Lunar South Pole | Mission planning in the lunar light" },
+      { property: "og:title", content: "Lunar Mission Browser | Explore the lunar south pole" },
       { property: "og:description", content: "Explore lunar south-pole landing sites and compare sunlight and Earth-contact windows across mission dates." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -27,8 +27,8 @@ function LandingPage() {
       <div className="landing-stars absolute inset-0 -z-10" aria-hidden="true" />
       <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-16 md:min-h-[690px] md:grid-cols-[minmax(0,1fr)_330px] md:px-8 md:py-20">
         <div className="max-w-3xl">
-          <p className="label-caps inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-2 text-white/85 backdrop-blur"><span className="size-1.5 rounded-full bg-sun shadow-[0_0_12px_var(--sun)]" />Lunar south pole <span className="text-white/40">/</span> Mission design</p>
-          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.05] tracking-tight text-white md:text-7xl">Choose a place<br />in the <span className="landing-title-glow">lunar light.</span></h1>
+          <p className="label-caps inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-2 text-white/85 backdrop-blur"><span className="size-1.5 rounded-full bg-sun shadow-[0_0_12px_var(--sun)]" />Lunar Mission Browser <span className="text-white/40">/</span> Mission design</p>
+          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-tight text-white md:text-7xl">Find the right<br />place in the <span className="landing-title-glow">lunar light.</span></h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-white/75 md:text-lg">Compare eight study locations near the lunar south pole. Explore their NASA LOLA terrain previews, then estimate when the Sun and Earth clear each site’s assumed horizon during your selected mission dates.</p>
           <div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg" className="h-12 rounded-full px-6"><Link to="/planner">Explore the planner <ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="h-12 rounded-full border-white/25 bg-black/20 px-6 text-white hover:bg-white/10 hover:text-white"><Link to="/how-it-works">How it works</Link></Button></div>
           <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/65"><span>{SITES.length} built-in study locations</span><span>Custom coordinate plotting</span><span>Mission-window comparison</span></div>
@@ -50,6 +50,7 @@ function LandingPage() {
 
     <section id="workspace" className="landing-content mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
       <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="label-caps text-primary">Compare locations and dates</p><h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight md:text-4xl">Eight south-polar study sites</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Inspect candidate coordinates, compare estimated Sun and Earth visibility over mission windows, and review the assumptions behind each result.</p></div><Button asChild variant="link" className="group"><Link to="/planner">Enter mission planner <ArrowRight className="transition-transform group-hover:translate-x-1" /></Link></Button></div>
+      <section className="landing-sites mt-10" aria-labelledby="landing-sites-heading"><div className="mb-5 flex flex-wrap items-end justify-between gap-4"><div><p className="label-caps text-primary">South-polar atlas</p><h3 id="landing-sites-heading" className="mt-2 text-xl font-semibold">Eight regions. One lunar frontier.</h3></div><span className="font-mono text-[10px] text-muted-foreground">CANDIDATE STUDY LOCATIONS</span></div><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{SITES.slice(0, 8).map((site, i) => <article key={site.id} className="landing-site-card"><span className="landing-site-index">{String(i + 1).padStart(2, '0')}</span><span className="landing-site-pin" style={{ filter: `hue-rotate(${i * 37}deg)` }} aria-hidden="true"/><span className="min-w-0"><strong>{site.name}</strong><small>{Math.abs(site.lat).toFixed(1)}°S <i>·</i> {Math.abs(site.lon).toFixed(1)}°{site.lon < 0 ? 'W' : 'E'}</small></span></article>)}</div></section>
       <div className="mt-9 grid gap-4 md:grid-cols-3">
         <FeatureCard number="01" icon={<Globe2 className="size-5" />} title="Inspect sites" text="Rotate the lunar globe, select one of eight built-in study locations, or add custom coordinates. Built-in sites include NASA LOLA terrain previews." />
         <FeatureCard number="02" icon={<Sun className="size-5" />} title="Set a mission window" text="Choose a start date, duration, and ranking priority: estimated sunlight, Earth visibility, or a weighted balance." />

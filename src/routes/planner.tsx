@@ -85,6 +85,7 @@ function PlannerPage() {
       <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">Find your place in the <span className="planner-title-accent">lunar light.</span></h1>
       <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">Explore candidate landing zones on the Moon, shape a custom site, and see how sunlight and Earth contact change across your mission.</p>
       <div className="mt-6 flex flex-wrap gap-2 text-[11px] text-white/70"><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">01 <span className="ml-1 text-white/45">Explore the Moon</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">02 <span className="ml-1 text-white/45">Set mission conditions</span></span><span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5">03 <span className="ml-1 text-white/45">Compare the windows</span></span></div>
+      <div className="planner-telemetry-rail mt-7"><div><span>LOCATIONS IN VIEW</span><strong>{selected.length}<small> / {sites.length}</small></strong></div><div><span>MISSION WINDOW</span><strong>{days === 29.53 ? '29.53' : days}<small> days</small></strong></div><div><span>RANKING PRIORITY</span><strong>{priority === 'comms' ? 'Earth link' : priority === 'power' ? 'Power' : 'Balanced'}</strong></div><div className="planner-rail-orbit" aria-hidden="true"><i/><i/><i/></div></div>
     </header>
 
     <section aria-labelledby="step-1" className="mb-10">
@@ -94,7 +95,7 @@ function PlannerPage() {
         <div className="site-selector rounded-2xl border border-white/10 p-4 md:p-5">
           <div className="mb-4"><p className="label-caps text-primary">Site catalog</p><h3 className="mt-1 text-base font-semibold">Landing choices</h3></div>
           <div className="mb-3 flex justify-between text-xs text-muted-foreground"><span>{selected.length} of {sites.length} included in the comparison</span><Button variant="link" size="sm" className="h-auto p-0" onClick={() => setSelected(selected.length === sites.length ? [] : sites.map(s => s.id))}>{selected.length === sites.length ? 'Clear' : 'Select all'}</Button></div>
-          <div className="max-h-[430px] space-y-1 overflow-auto pr-1">{sites.map((s, i) => <label key={s.id} className={`site-choice flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-xs leading-relaxed transition-colors ${detail?.site.id === s.id ? 'site-choice-active' : 'border-transparent hover:border-white/10 hover:bg-white/[0.035]'}`}><input type="checkbox" className="mt-1 accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-medium text-foreground"><span className="font-mono text-[10px] text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>{s.name}</span><span className="mt-1 block pl-7 font-mono text-[10px] text-muted-foreground">{Math.abs(s.lat).toFixed(2)}°{s.lat < 0 ? 'S' : 'N'} · {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? 'W' : 'E'}</span></span></label>)}</div>
+          <div className="max-h-[430px] space-y-1 overflow-auto pr-1">{sites.map((s, i) => <label key={s.id} className={`site-choice flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-xs leading-relaxed ${detail?.site.id === s.id ? 'site-choice-active' : 'border-transparent hover:border-white/10 hover:bg-white/[0.035]'}`}><input type="checkbox" className="accent-primary" checked={selected.includes(s.id)} onChange={() => toggle(s.id)} /><span className="site-terrain-chip" style={{ filter: `hue-rotate(${i * 41}deg)` }} aria-hidden="true"/><span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-medium text-foreground"><span className="font-mono text-[10px] text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>{s.name}</span><span className="mt-1 block pl-7 font-mono text-[10px] text-muted-foreground">{Math.abs(s.lat).toFixed(2)}°{s.lat < 0 ? 'S' : 'N'} · {Math.abs(s.lon).toFixed(2)}°{s.lon < 0 ? 'W' : 'E'}</span></span><span className="site-focus-tag">{detail?.site.id === s.id ? 'FOCUS' : ''}</span></label>)}</div>
           {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
           <div className="mt-4 rounded-xl border border-white/[0.07] bg-black/15 p-3"><p className="text-[10px] font-semibold uppercase tracking-wider text-white/65">Horizon assumptions</p><p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">Custom sites use a declared flat 0° horizon. Built-in site terrain masks are illustrative.</p></div>
         </div>
@@ -115,10 +116,10 @@ function PlannerPage() {
     <section aria-labelledby="step-3" className="border-t border-hairline pt-8">
       <SectionTitle id="step-3" n="3" title="Read the result" />
       {ranked.length === 0 || !best || !detail ? <div className="mt-4 border-y border-hairline py-16 text-center text-muted-foreground">Select at least one site and a valid date to see results.</div> : <>
-        <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-5">
-          <p className="label-caps text-primary">Best match</p>
-          <h2 className="mt-2 text-xl font-semibold">{best.site.name} for {PRIORITY_TEXT[priority]}</h2>
-          <p className="mt-2 text-sm text-muted-foreground"><span className="font-mono text-sun">{(best.illumination * 100).toFixed(0)}%</span> sunlight · <span className="font-mono text-earth">{(best.earthVisibility * 100).toFixed(0)}%</span> Earth in view · longest darkness <span className="font-mono">{formatDuration(best.longestDarkHours)}</span> · longest Earth gap <span className="font-mono">{formatDuration(best.longestGapHours)}</span></p>
+        <div className="best-match-panel mt-4">
+          <div className="best-match-copy"><p className="label-caps text-primary">Highest ranked · {priority === 'balanced' ? 'weighted equally' : `${priority === 'power' ? 'power' : 'Earth link'} priority`}</p><h2 className="mt-3 text-2xl font-semibold md:text-3xl">{best.site.name}</h2><p className="mt-2 max-w-lg text-sm leading-relaxed text-white/60">Best match for {PRIORITY_TEXT[priority]} across this {days === 29.53 ? 'lunar-cycle' : `${days}-day`} window.</p><p className="mt-4 font-mono text-[10px] text-white/40">{Math.abs(best.site.lat).toFixed(2)}°S <span className="text-white/20">/</span> {Math.abs(best.site.lon).toFixed(2)}°{best.site.lon < 0 ? 'W' : 'E'}</p></div>
+          <div className="best-match-gauges"><MetricRing label="Sunlight" value={best.illumination} tone="sun"/><MetricRing label="Earth view" value={best.earthVisibility} tone="earth"/></div>
+          <div className="best-match-gaps"><div><span>LONGEST DARK</span><strong>{formatDuration(best.longestDarkHours)}</strong></div><div><span>LONGEST EARTH GAP</span><strong>{formatDuration(best.longestGapHours)}</strong></div></div>
           {best.illumination === 0 && <p role="status" className="mt-3 text-sm text-destructive">No sunlight reaches this site in this window. Try a different start date or a longer duration.</p>}
         </div>
 
@@ -153,6 +154,10 @@ function PlannerPage() {
   </main>;
 }
 function delta(value: number) { return `${value >= 0 ? '+' : ''}${(value * 100).toFixed(1)}`; }
+function MetricRing({ label, value, tone }: { label: string; value: number; tone: 'sun' | 'earth' }) {
+  const radius = 31, circumference = 2 * Math.PI * radius, amount = Math.max(0, Math.min(1, value));
+  return <div className={`metric-ring metric-ring-${tone}`}><svg viewBox="0 0 76 76" role="img" aria-label={`${label}: ${Math.round(amount * 100)} percent`}><circle className="metric-ring-track" cx="38" cy="38" r={radius}/><circle className="metric-ring-value" cx="38" cy="38" r={radius} strokeDasharray={circumference} strokeDashoffset={circumference * (1 - amount)}/></svg><strong>{Math.round(amount * 100)}<small>%</small></strong><span>{label}</span></div>;
+}
 function SectionTitle({ id, n, title }: { id: string; n: string; title: string }) { return <h2 id={id} className="flex items-center gap-3 text-lg font-semibold"><span className="grid size-7 place-items-center rounded-full bg-primary font-mono text-xs text-primary-foreground">{n}</span>{title}</h2>; }
 function WindowView({ analysis, index, onScrub, label }: { analysis: SiteAnalysis; index: number; onScrub: (i: number) => void; label: string }) {
   const sample = analysis.samples[index];
