@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2 } from 'lucide-react';
+import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2, Orbit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SkyDome } from '@/components/SkyDome';
 import { TimelineStrip } from '@/components/TimelineStrip';
@@ -12,6 +12,7 @@ import { customSite, nextTransition, rankSites, type Priority } from '@/lib/plan
 import { exportReportJson, exportSummaryCsv, exportTimeseriesCsv } from '@/lib/export';
 import { MissionSummary } from '@/components/MissionSummary';
 import { TermHelp } from '@/components/TermHelp';
+import { LunarOrbitalView } from '@/components/LunarOrbitalView';
 
 export const Route = createFileRoute('/planner')({
   head: () => ({ meta: [
@@ -43,6 +44,7 @@ function PlannerPage() {
   const [lat, setLat] = useState('-89');
   const [lon, setLon] = useState('0');
   const [horizon, setHorizon] = useState('0');
+  const [showOrbit, setShowOrbit] = useState(false);
   const startMs = Date.parse(`${start}:00Z`);
   const altMs = Date.parse(`${alternate}:00Z`);
   const valid = Number.isFinite(startMs);
@@ -123,6 +125,8 @@ function PlannerPage() {
         <p className="mt-3 border-l-2 border-primary pl-3 text-xs leading-relaxed text-muted-foreground">Screening estimates, not flight-certified. Built-in terrain masks are illustrative. Rankings measure visibility, not electrical output or link margin.</p>
 
         <div className="mt-8"><MissionSummary analysis={detail} alternatives={ranked} /></div>
+
+        <div className="mt-5"><Button variant="outline" size="sm" aria-expanded={showOrbit} onClick={() => setShowOrbit(value => !value)}><Orbit />{showOrbit ? 'Hide 3D orbital model' : `Explore ${detail.site.name} in 3D orbit`}</Button>{showOrbit && <div className="mt-3"><LunarOrbitalView analysis={detail} index={index} className="h-[320px] sm:h-[400px]" /></div>}</div>
 
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p className="label-caps text-primary">Selected location</p><h2 className="mt-2 text-xl font-semibold">{detail.site.name}</h2></div><div className="flex items-center gap-2"><Button size="icon" variant="outline" title="Reset timeline" aria-label="Reset timeline" onClick={() => { setIndex(0); setPlaying(false); }}><RotateCcw /></Button><Button size="icon" title={playing ? 'Pause timeline' : 'Play timeline'} aria-label={playing ? 'Pause timeline' : 'Play timeline'} onClick={() => setPlaying(v => !v)}>{playing ? <Pause /> : <Play />}</Button></div></div>
         <div className={`grid gap-6 ${compare ? 'xl:grid-cols-2' : ''}`}><WindowView analysis={detail} index={index} onScrub={setIndex} label="Primary window" />{compare && altDetail && <WindowView analysis={altDetail} index={index} onScrub={setIndex} label="Alternate window" />}</div>

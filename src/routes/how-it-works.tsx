@@ -85,9 +85,9 @@ function HowItWorksPage() {
         <h2 className="text-2xl font-bold">Try it</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           This is one month at a real candidate site. The circle is the sky seen
-          from the ground: the centre is straight up, the edge is the horizon,
-          and the shaded band around the rim is the surrounding terrain. Drag the
-          slider and watch the Sun and Earth circle the rim, dipping behind hills.
+          from the ground: the dome rises from the local horizon toward straight
+          overhead, and the gold horizon ring marks the surrounding terrain.
+          Drag the slider and watch the Sun and Earth move across the 3D sky.
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2">
@@ -134,7 +134,7 @@ function HowItWorksPage() {
               <input
                 type="range"
                 min={0}
-                max={DEMO_STEPS}
+                max={DEMO_STEPS - 1}
                 value={index}
                 onChange={(e) => setIndex(Number(e.target.value))}
                 className="h-1 w-full accent-primary"

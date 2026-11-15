@@ -261,13 +261,28 @@ main { animation: page-enter 220ms ease-out; }
 .sim-live-badge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 999px; background: rgb(255 255 255 / 3%); padding: 9px 12px; color: rgb(255 255 255 / 64%); font: 600 9px/1 var(--font-mono); letter-spacing: .11em; }
 .sim-scene-card { background: linear-gradient(145deg, #101720, #090d13); box-shadow: 0 22px 70px rgb(0 0 0 / 28%); }
 .sim-scene-top, .sim-scene-footer { background: rgb(255 255 255 / 1.5%); }
-.sim-panorama-wrap { overflow: hidden; background: #09111d; }
-.sim-panorama { cursor: grab; }
-.sim-panorama:active { cursor: grabbing; }
-.sim-panorama-callout { position: absolute; right: 16px; top: 16px; display: flex; align-items: center; gap: 8px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 999px; background: rgb(5 8 13 / 55%); padding: 8px 11px; color: rgb(255 255 255 / 68%); font: 10px/1 var(--font-mono); backdrop-filter: blur(12px); }
 .sim-skymap { background: radial-gradient(ellipse at 50% 46%, rgb(45 70 97 / 15%), transparent 65%), linear-gradient(#0a1019, #111720); }
 .sim-control-panel { background: linear-gradient(155deg, rgb(19 24 32 / 96%), rgb(11 14 19 / 96%)); box-shadow: 0 20px 60px rgb(0 0 0 / 22%); }
-@media (max-width: 640px) { .sim-live-badge { font-size: 8px; } .sim-panorama-callout { top: 10px; right: 10px; font-size: 8px; } }
+.lunar-assistant-root { position: fixed; z-index: 70; right: max(18px, env(safe-area-inset-right)); bottom: max(18px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-end; gap: 12px; pointer-events: none; }
+.lunar-assistant-root > * { pointer-events: auto; }
+.lunar-assistant-launcher { display: inline-flex; height: 48px; align-items: center; gap: 9px; border: 1px solid rgb(255 226 164 / 42%); border-radius: 999px; background: linear-gradient(130deg, #ffe0a0, #eeb75f); padding: 0 16px; color: #15130f; font-size: 12px; font-weight: 700; box-shadow: 0 10px 36px rgb(0 0 0 / 40%), 0 0 24px rgb(255 199 111 / 18%); transition: transform 160ms ease, box-shadow 160ms ease; }
+.lunar-assistant-launcher:hover { transform: translateY(-2px); box-shadow: 0 14px 42px rgb(0 0 0 / 45%), 0 0 32px rgb(255 199 111 / 26%); }
+.assistant-launcher-bot { margin-left: 2px; opacity: .58; }
+.lunar-assistant-panel { display: flex; width: min(390px, calc(100vw - 28px)); max-height: min(590px, calc(100dvh - 96px)); flex-direction: column; overflow: hidden; border: 1px solid rgb(255 255 255 / 11%); border-radius: 20px; background: linear-gradient(145deg, rgb(18 23 31 / 98%), rgb(9 12 17 / 98%)); box-shadow: 0 24px 90px rgb(0 0 0 / 58%); backdrop-filter: blur(24px); animation: assistant-enter 180ms ease-out; }
+.lunar-assistant-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgb(255 255 255 / 8%); padding: 14px 14px 14px 16px; background: radial-gradient(ellipse at 0% 0%, rgb(255 198 104 / 10%), transparent 64%); }
+.assistant-avatar { display: grid; width: 34px; height: 34px; flex: none; place-items: center; border: 1px solid rgb(255 198 104 / 24%); border-radius: 11px; background: rgb(255 198 104 / 9%); color: #ffd58f; }
+.lunar-assistant-messages { display: flex; min-height: 150px; flex-direction: column; gap: 10px; overflow-y: auto; padding: 16px 14px; }
+.assistant-message { max-width: 90%; border: 1px solid rgb(255 255 255 / 7%); border-radius: 14px; padding: 10px 12px; }
+.assistant-message-bot { align-self: flex-start; background: rgb(255 255 255 / 4%); color: rgb(255 255 255 / 86%); }
+.assistant-message-user { align-self: flex-end; border-color: rgb(75 206 190 / 18%); background: rgb(75 206 190 / 8%); color: rgb(255 255 255 / 92%); }
+.lunar-assistant-compose { display: flex; align-items: flex-end; gap: 9px; margin: 0 12px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 14px; background: rgb(0 0 0 / 18%); padding: 9px 9px 9px 12px; }
+.assistant-thinking { display: inline-flex; gap: 4px; padding: 3px 2px; }
+.assistant-thinking i { width: 5px; height: 5px; border-radius: 50%; background: var(--primary); animation: assistant-bounce .8s ease-in-out infinite alternate; }
+.assistant-thinking i:nth-child(2) { animation-delay: .15s; }
+.assistant-thinking i:nth-child(3) { animation-delay: .3s; }
+@keyframes assistant-enter { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes assistant-bounce { to { opacity: .35; transform: translateY(-3px); } }
+@media (max-width: 640px) { .sim-live-badge { font-size: 8px; } }
 @media (max-width: 640px) {
   .landing-hero-shade { background: linear-gradient(90deg, rgb(5 7 12 / 87%), rgb(5 7 12 / 58%)), linear-gradient(0deg, rgb(5 7 12 / 76%), transparent 75%); }
   .planner-page > section[aria-labelledby="step-2"] { padding: 18px; }

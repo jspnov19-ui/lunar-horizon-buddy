@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
 import { SkyDome } from "@/components/SkyDome";
+import { LunarOrbitalView } from "@/components/LunarOrbitalView";
 import { ElevationChart } from "@/components/ElevationChart";
 import { TimelineStrip } from "@/components/TimelineStrip";
 import { SITES } from "@/lib/sites";
@@ -24,13 +25,13 @@ export const Route = createFileRoute("/models")({
       {
         name: "description",
         content:
-          "Interactive Sun and Earth horizon model for eight candidate lunar south pole landing sites: scrub a full lunation and compare solar uptime against direct-to-Earth link windows.",
+          "Interactive three-dimensional lunar orbital and local-sky models for candidate south-pole landing sites, with scrub-able sunlight and Earth-contact windows.",
       },
       { property: "og:title", content: "Models — Lunar South Pole Analysis" },
       {
         property: "og:description",
         content:
-          "Scrub a lunation of Sun and Earth geometry against illustrative terrain horizon masks for eight candidate south-polar landing sites.",
+        "Explore three-dimensional Sun and Earth orbital views and local sky geometry against illustrative terrain horizons at candidate south-polar sites.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -87,6 +88,11 @@ function ModelsPage() {
     <div className="grid-texture min-h-[calc(100vh-4rem)] bg-background p-4 md:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">Advanced models</h1><LunarTools site={primary.site} startMs={startMs} days={days} /></div>
       <MissionSummary analysis={primary} alternatives={rankSites(compare ? [primary, compare] : [primary], 'balanced')} />
+      <section className="my-5 rounded-2xl border border-white/10 bg-white/[0.015] p-4 md:p-5">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-2"><div><p className="label-caps text-primary">3D orbital geometry</p><h2 className="mt-1 text-lg font-semibold">Follow the Sun and Earth around the selected landing site.</h2></div><p className="font-mono text-[9px] text-muted-foreground">NASA LRO SURFACE · DISTANCES COMPRESSED</p></div>
+        <div className={`grid gap-4 ${compare ? 'lg:grid-cols-2' : ''}`}><LunarOrbitalView analysis={primary} index={index} className="h-[320px] md:h-[390px]" />{compare && <LunarOrbitalView analysis={compare} index={index} className="h-[320px] md:h-[390px]" />}</div>
+        <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">Trajectories are visualized from the approximate apparent Sun and Earth positions over this selected time span. Orbit distances are compressed to fit the scene; these paths are not spacecraft trajectories.</p>
+      </section>
       <div className="glass-panel relative flex flex-col overflow-hidden rounded-xl shadow-[var(--shadow-panel)]">
         {/* Control strip */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border bg-background/60 px-4 py-3 font-mono text-[11px]">

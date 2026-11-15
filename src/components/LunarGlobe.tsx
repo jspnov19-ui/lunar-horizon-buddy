@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/button';
 import type { LandingSite } from '@/lib/sites';
 import { PolarMapFallback } from '@/components/PolarMapFallback';
 import { computeHorizon } from '@/lib/astro';
+import { loadGltfLoader, loadThree } from '@/lib/three-loader';
 
-declare global {
-  interface Window { THREE?: any }
-}
 
 type Props = {
   sites: LandingSite[];
@@ -35,38 +33,6 @@ type ThreeWorld = {
   sunMarker: any;
   earthMarker: any;
 };
-
-let threeLoader: Promise<any> | null = null;
-let gltfLoaderScript: Promise<void> | null = null;
-function loadThree() {
-  if (window.THREE) return Promise.resolve(window.THREE);
-  if (!threeLoader) {
-    threeLoader = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-      script.async = true;
-      script.onload = () => window.THREE ? resolve(window.THREE) : reject(new Error('Three.js did not initialize.'));
-      script.onerror = () => reject(new Error('Three.js could not be loaded.'));
-      document.head.appendChild(script);
-    });
-  }
-  return threeLoader;
-}
-
-function loadGltfLoader() {
-  if (window.THREE?.GLTFLoader) return Promise.resolve();
-  if (!gltfLoaderScript) {
-    gltfLoaderScript = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-      script.async = true;
-      script.onload = () => window.THREE?.GLTFLoader ? resolve() : reject(new Error('The glTF loader did not initialize.'));
-      script.onerror = () => reject(new Error('The glTF loader could not be loaded.'));
-      document.head.appendChild(script);
-    });
-  }
-  return gltfLoaderScript;
-}
 
 function siteVector(THREE: any, site: Pick<LandingSite, 'lat' | 'lon'>) {
   const lat = site.lat * Math.PI / 180, lon = site.lon * Math.PI / 180;

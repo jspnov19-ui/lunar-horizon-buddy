@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { NavBar } from "../components/NavBar";
+import { LunarLandingAssistant } from "../components/LunarLandingAssistant";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -140,6 +141,7 @@ function RootComponent() {
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </div>
+        <LunarLandingAssistant />
         <footer className="border-t border-hairline px-4 py-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground md:px-6">
           Planning-grade geometry · not for navigation · Lunar South Pole Analysis
         </footer>

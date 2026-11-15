@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Compass, Globe2, Radio, Sun } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SkyDome } from '@/components/SkyDome';
+import { LunarOrbitalView } from '@/components/LunarOrbitalView';
 import { sampleSite } from '@/lib/analysis';
 import { SITES } from '@/lib/sites';
 
@@ -41,6 +42,7 @@ export function QuickStartTour() {
           </DialogHeader>
           <div className="mt-5 flex gap-1.5" aria-label={`Step ${step + 1} of ${STEPS.length}`}>{STEPS.map((_, i) => <span key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-primary' : 'bg-white/10'}`} />)}</div>
         </div>
+        {step === 0 && demo && <div className="mx-6 mb-5 overflow-hidden rounded-xl sm:mx-8"><LunarOrbitalView analysis={demo} index={index} className="h-[190px] rounded-xl sm:h-[220px]" /></div>}
         {step === 2 && demo && <div className="mx-6 mb-5 rounded-xl border border-white/10 bg-black/20 p-4 sm:mx-8"><div className="mx-auto w-full max-w-[220px]"><SkyDome analysis={demo} index={index} /><input className="mt-3 w-full accent-primary" aria-label="Tour demo time" type="range" min={0} max={60} value={index} onChange={e => setIndex(Number(e.target.value))} /></div><p className="text-center text-[10px] text-muted-foreground">Try scrubbing the sample time to see the sky view change.</p></div>}
         {step === 3 && demo && <div className="mx-6 mb-5 grid grid-cols-2 gap-2 sm:mx-8"><MiniMetric tone="sun" label="Sunlight" note="Visibility estimate" value={`${Math.round(demo.illumination * 100)}%`} /><MiniMetric tone="earth" label="Earth in view" note="Direct line-of-sight" value={`${Math.round(demo.earthVisibility * 100)}%`} /></div>}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-6 py-4 sm:px-8">
