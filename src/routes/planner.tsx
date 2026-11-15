@@ -1,18 +1,15 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2, Orbit } from 'lucide-react';
+import { ArrowRight, Download, Pause, Play, Plus, RotateCcw, Sun, Radio, CalendarDays, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TimelineStrip } from '@/components/TimelineStrip';
 import { PolarMap } from '@/components/PolarMap';
-import { NasaCheck } from '@/components/NasaCheck';
 import { SITES, type LandingSite } from '@/lib/sites';
 import { formatDuration, formatUTC, sampleSite, type SiteAnalysis } from '@/lib/analysis';
 import { customSite, nextTransition, rankSites, type Priority } from '@/lib/planning';
 import { exportReportJson, exportSummaryCsv, exportTimeseriesCsv } from '@/lib/export';
 import { MissionSummary } from '@/components/MissionSummary';
 import { TermHelp } from '@/components/TermHelp';
-import { LunarOrbitalView } from '@/components/LunarOrbitalView';
-import { quickMapUrl } from '@/lib/lunar-tools';
 import { LolaTerrain } from '@/components/LolaTerrain';
 
 export const Route = createFileRoute('/planner')({
@@ -50,7 +47,6 @@ function PlannerPage() {
   const [lat, setLat] = useState('-89');
   const [lon, setLon] = useState('0');
   const [horizon, setHorizon] = useState('0');
-  const [showOrbit, setShowOrbit] = useState(false);
   const startMs = Date.parse(`${start}:00Z`);
   const altMs = Date.parse(`${alternate}:00Z`);
   const valid = Number.isFinite(startMs);
@@ -132,15 +128,11 @@ function PlannerPage() {
 
         <div className="mt-8"><MissionSummary analysis={detail} alternatives={ranked} /></div>
 
-        <div className="mt-5"><Button variant="outline" size="sm" aria-expanded={showOrbit} onClick={() => setShowOrbit(value => !value)}><Orbit />{showOrbit ? 'Hide 3D orbital model' : `Explore ${detail.site.name} in 3D orbit`}</Button>{showOrbit && <div className="mt-3"><LunarOrbitalView analysis={detail} index={index} className="h-[320px] sm:h-[400px]" /></div>}</div>
-
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><p className="label-caps text-primary">Selected location</p><h2 className="mt-2 text-xl font-semibold">{detail.site.name}</h2></div><div className="flex items-center gap-2"><Button size="icon" variant="outline" title="Reset timeline" aria-label="Reset timeline" onClick={() => { setIndex(0); setPlaying(false); }}><RotateCcw /></Button><Button size="icon" title={playing ? 'Pause timeline' : 'Play timeline'} aria-label={playing ? 'Pause timeline' : 'Play timeline'} onClick={() => setPlaying(v => !v)}>{playing ? <Pause /> : <Play />}</Button></div></div>
         <div className={`grid gap-6 ${compare ? 'xl:grid-cols-2' : ''}`}><WindowView analysis={detail} index={index} onScrub={setIndex} label="Primary window" />{compare && altDetail && <WindowView analysis={altDetail} index={index} onScrub={setIndex} label="Alternate window" />}</div>
         <input type="range" min={0} max={STEPS} value={index} onChange={e => setIndex(Number(e.target.value))} aria-label="Mission timeline" className="mt-6 w-full accent-primary" />
         <div className="mt-2 flex justify-between font-mono text-[10px] text-muted-foreground"><span>Landing</span><span>{(index / STEPS * days).toFixed(2)} days elapsed</span><span>Mission end</span></div>
         {compare && altDetail && <div className="mt-6 border-y border-hairline py-4 text-sm"><CalendarDays className="mr-2 inline size-4 text-primary" />Alternate date at this location: <strong className="text-sun">{delta(altDetail.illumination - detail.illumination)} pp sunlight</strong> · <strong className="text-earth">{delta(altDetail.earthVisibility - detail.earthVisibility)} pp Earth visibility</strong></div>}
-
-        <NasaCheck site={detail.site} startMs={startMs} days={days} />
 
         <details className="mt-10 border-t border-hairline pt-5">
           <summary className="cursor-pointer text-sm font-medium text-primary">Advanced: compare another date, enter coordinates, export data</summary>
@@ -167,7 +159,7 @@ function WindowView({ analysis, index, onScrub, label }: { analysis: SiteAnalysi
   const sample = analysis.samples[index];
   if (!sample) return null;
   return <div className="min-w-0"><p className="mb-3 text-xs font-medium text-muted-foreground">{label} · <span className="font-mono">{formatUTC(sample.t)} UTC</span></p>
-    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(230px,.75fr)]">{analysis.site.id.startsWith('custom-') ? <div className="grid min-h-[235px] place-content-center rounded-2xl border border-white/10 bg-black/20 p-5 text-center sm:min-h-[290px]"><p className="text-sm font-medium">Custom site terrain preview</p><p className="mt-2 max-w-sm text-xs leading-relaxed text-muted-foreground">No surveyed LOLA patch is bundled for custom coordinates. This site continues to use its explicitly declared constant horizon.</p></div> : <LolaTerrain siteId={analysis.site.id} siteName={analysis.site.name}/>}<dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1"><div className="rounded-xl border border-white/10 bg-white/[0.02] p-4"><dt className="flex items-center gap-2 text-xs text-sun"><Sun className="size-4" />{sample.sunUp ? 'Sun above terrain' : 'Sun blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.sunAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.sunUp ? 'Sunset' : 'Sunrise'} {nextTransition(analysis, index, 'sun')}</dd></div><div className="rounded-xl border border-white/10 bg-white/[0.02] p-4"><dt className="flex items-center gap-2 text-xs text-earth"><Radio className="size-4" />{sample.earthUp ? 'Earth in view' : 'Earth blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.earthAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.earthUp ? 'Earthset' : 'Earthrise'} {nextTransition(analysis, index, 'earth')}</dd><p className="mt-3 text-[9px] text-muted-foreground">Visibility figures still use the app’s illustrative horizon mask.</p></div><a href={quickMapUrl(analysis.site)} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-primary hover:underline">Open NASA terrain viewer ↗</a></dl></div>
+    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(210px,.6fr)]">{analysis.site.id.startsWith('custom-') ? <div className="grid min-h-[250px] place-content-center rounded-2xl border border-white/10 bg-black/20 p-5 text-center"><p className="text-sm font-medium">Custom site panorama</p><p className="mt-2 text-xs text-muted-foreground">A surveyed LOLA terrain patch is available for the eight built-in sites.</p></div> : <LolaTerrain siteId={analysis.site.id} siteName={analysis.site.name} className="[&_[data-terrain-canvas]]:!h-[280px]"/>}<dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1"><div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur"><dt className="flex items-center gap-2 text-xs text-sun"><Sun className="size-4" />{sample.sunUp ? 'Sun above terrain' : 'Sun blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.sunAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.sunUp ? 'Sunset' : 'Sunrise'} {nextTransition(analysis, index, 'sun')}</dd></div><div className="rounded-xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur"><dt className="flex items-center gap-2 text-xs text-earth"><Radio className="size-4" />{sample.earthUp ? 'Earth in view' : 'Earth blocked'}</dt><dd className="mt-1 font-mono text-xl">{sample.earthAlt.toFixed(2)}° <span className="text-xs text-muted-foreground">elevation</span></dd><dd className="mt-1 text-xs text-muted-foreground">{sample.earthUp ? 'Earthset' : 'Earthrise'} {nextTransition(analysis, index, 'earth')}</dd><p className="mt-3 text-[9px] text-muted-foreground">Planner visibility uses illustrative horizons.</p></div></dl></div>
     <div className="mt-4"><TimelineStrip analysis={analysis} index={index} onScrub={onScrub} label={analysis.site.name} /></div>
     <details className="mt-4 border-t border-hairline pt-3"><summary className="cursor-pointer text-xs text-muted-foreground">Sunlight & direct-link intervals</summary><div className="mt-3 grid gap-4 sm:grid-cols-2">{(['sun', 'earth'] as const).map(body => <div key={body}><p className={`mb-2 text-xs font-medium ${body === 'sun' ? 'text-sun' : 'text-earth'}`}>{body === 'sun' ? 'Sunlight' : 'Earth link'}</p><ul className="max-h-40 space-y-2 overflow-auto font-mono text-[10px] text-muted-foreground">{(body === 'sun' ? analysis.sunlitIntervals : analysis.earthIntervals).map((i, n) => <li key={n}>{formatUTC(i.start)} → {formatUTC(i.end)}</li>)}{(body === 'sun' ? analysis.sunlitIntervals : analysis.earthIntervals).length === 0 && <li>No visible intervals in this window.</li>}</ul></div>)}</div><p className="mt-3 text-[10px] text-muted-foreground">Events are sampled to ≈ {formatDuration(analysis.stepMs / 3600000)}. Intervals are clipped at the mission boundaries; visibility uses the upper edge of each disc.</p></details>
   </div>;

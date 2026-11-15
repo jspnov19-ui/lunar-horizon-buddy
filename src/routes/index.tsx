@@ -4,6 +4,7 @@ import { ArrowDown, ArrowRight, Globe2, Radio, Sun } from "lucide-react";
 import heroImage from "@/assets/lunar-south-pole.jpg";
 import { Button } from "@/components/ui/button";
 import { SITES } from "@/lib/sites";
+import { LolaTerrain } from "@/components/LolaTerrain";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,8 +24,11 @@ function LandingPage() {
   return <main className="landing-page">
     <section className="landing-hero relative isolate min-h-[620px] overflow-hidden border-b border-white/10 md:min-h-[690px]">
       <img src={heroImage} alt="Lunar south-pole ridges illuminated by low sunlight" className="absolute inset-0 -z-20 size-full object-cover object-center" />
+      <LolaTerrain siteId="de-gerlache-rim" siteName="de Gerlache Rim 2" className="absolute inset-0 z-[-1] rounded-none border-0 [&_[data-terrain-canvas]]:!h-full" />
       <div className="landing-hero-shade absolute inset-0 -z-10" />
       <div className="landing-stars absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="pointer-events-none absolute left-[58%] top-[23%] z-0 hidden md:block" aria-hidden="true"><span className="block size-9 rounded-full bg-[radial-gradient(circle_at_35%_35%,#fff4cf,#ffc66d_52%,#d78038)] shadow-[0_0_34px_12px_rgb(255_190_98_/_24%)]"/><span className="absolute left-12 top-2 whitespace-nowrap font-mono text-[9px] uppercase tracking-[.2em] text-sun/80">Sun · low on horizon</span></div>
+      <div className="pointer-events-none absolute right-[36%] top-[34%] z-0 hidden md:block" aria-hidden="true"><span className="block size-5 rounded-full bg-[radial-gradient(circle_at_32%_30%,#e8f5ff,#75bce9_48%,#28558d)] shadow-[0_0_24px_8px_rgb(104_180_246_/_22%)]"/><span className="absolute left-8 top-1 whitespace-nowrap font-mono text-[9px] uppercase tracking-[.2em] text-earth/80">Earth · in the lunar sky</span></div>
       <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-16 md:min-h-[690px] md:grid-cols-[minmax(0,1fr)_330px] md:px-8 md:py-20">
         <div className="max-w-3xl">
           <p className="label-caps inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-2 text-white/85 backdrop-blur"><span className="size-1.5 rounded-full bg-sun shadow-[0_0_12px_var(--sun)]" />Lunar south pole <span className="text-white/40">/</span> Mission design</p>
@@ -34,6 +38,7 @@ function LandingPage() {
           <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/65"><span>{SITES.length} built-in study locations</span><span>Custom coordinate plotting</span><span>Mission-window comparison</span></div>
         </div>
         <aside className="mission-glance hidden rounded-2xl border border-white/15 p-5 text-white backdrop-blur-xl md:block">
+          <div className="mb-5 flex items-center justify-between rounded-xl border border-white/10 bg-black/25 px-3 py-3"><div className="flex items-center gap-2"><span className="size-2 rounded-full bg-sun shadow-[0_0_14px_var(--sun)]"/><span className="text-[10px] uppercase tracking-widest text-sun">Sun</span></div><span className="text-white/25">·</span><div className="flex items-center gap-2"><span className="size-2 rounded-full bg-earth shadow-[0_0_14px_var(--earth)]"/><span className="text-[10px] uppercase tracking-widest text-earth">Earth</span></div></div>
           <p className="label-caps text-white/55">Mission signals</p>
           <h2 className="mt-2 text-lg font-semibold">Plan around what matters.</h2>
           <div className="mt-5 space-y-4">
