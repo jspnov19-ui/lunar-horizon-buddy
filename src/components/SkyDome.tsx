@@ -65,29 +65,42 @@ export function SkyDome({ analysis, index }: { analysis: SiteAnalysis; index: nu
       line(horizon, 0xf2c06e, 0.86, 2);
       scene.add(grid);
 
-      const ground = new THREE.Mesh(new THREE.CircleGeometry(SKY_RADIUS * 0.99, 80), new THREE.MeshBasicMaterial({ color: 0x191d22, side: THREE.DoubleSide, transparent: true, opacity: 0.88 }));
+      const ground = new THREE.Mesh(new THREE.CircleGeometry(SKY_RADIUS * 0.99, 96), new THREE.MeshStandardMaterial({ color: 0x625d55, roughness: 1, metalness: 0, side: THREE.DoubleSide }));
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = -0.025;
       scene.add(ground);
+      const terrainLight = new THREE.DirectionalLight(0xffd49a, 0.72);
+      terrainLight.position.set(-3, 1.4, 2);
+      scene.add(terrainLight);
+      const random = (seed: number) => { const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453; return value - Math.floor(value); };
+      for (let i = 0; i < 26; i++) {
+        const azimuth = random(i + 7) * Math.PI * 2;
+        const radius = 1.25 + random(i + 41) * 3.3;
+        const crater = new THREE.Mesh(new THREE.TorusGeometry(0.035 + random(i + 83) * 0.12, 0.008, 5, 24), new THREE.MeshBasicMaterial({ color: 0xc3b59b, transparent: true, opacity: 0.14 }));
+        crater.rotation.x = -Math.PI / 2;
+        crater.position.set(Math.cos(azimuth) * radius, -0.012, Math.sin(azimuth) * radius);
+        crater.scale.set(1.4, 1, 0.7);
+        scene.add(crater);
+      }
       const stars: number[] = [];
-      for (let i = 0; i < 420; i++) {
+      for (let i = 0; i < 850; i++) {
         const az = (i * 137.508) % 360;
-        const alt = 3 + ((i * 47.37) % 84);
+        const alt = 1 + ((i * 47.37) % 88);
         const p = skyVector(THREE, alt, az, SKY_RADIUS * 0.994);
         stars.push(p.x, p.y, p.z);
       }
       const starGeometry = new THREE.BufferGeometry();
       starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(stars, 3));
-      const starMaterial = new THREE.PointsMaterial({ size: 0.033, color: 0xd8e8ff, transparent: true, opacity: 0.68, sizeAttenuation: true });
+      const starMaterial = new THREE.PointsMaterial({ size: 0.043, color: 0xe2edff, transparent: true, opacity: 0.78, sizeAttenuation: true });
       scene.add(new THREE.Points(starGeometry, starMaterial));
 
       const trackGroup = new THREE.Group();
       const bodyGroup = new THREE.Group();
       scene.add(trackGroup, bodyGroup);
-      const world: SkyWorld = { THREE, renderer, scene, camera, trackGroup, bodyGroup, theta: 0.12, phi: 1.12, distance: 2.7 };
+      const world: SkyWorld = { THREE, renderer, scene, camera, trackGroup, bodyGroup, theta: 0.12, phi: 1.32, distance: 3.2 };
       worldRef.current = world;
       const updateCamera = () => {
-        const targetY = 1.65;
+        const targetY = 2.35;
         camera.position.set(world.distance * Math.sin(world.phi) * Math.sin(world.theta), targetY + world.distance * Math.cos(world.phi), world.distance * Math.sin(world.phi) * Math.cos(world.theta));
         camera.lookAt(0, targetY, 0);
       };
@@ -107,11 +120,11 @@ export function SkyDome({ analysis, index }: { analysis: SiteAnalysis; index: nu
         const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
         drag = { x: event.clientX, y: event.clientY };
         world.theta -= dx * 0.006;
-        world.phi = Math.max(0.16, Math.min(1.53, world.phi - dy * 0.006));
+        world.phi = Math.max(0.72, Math.min(1.58, world.phi - dy * 0.006));
         updateCamera();
       };
       const up = () => { drag = null; };
-      const wheel = (event: WheelEvent) => { event.preventDefault(); world.distance = Math.max(2.0, Math.min(4.2, world.distance * (1 + event.deltaY * 0.0008))); updateCamera(); };
+      const wheel = (event: WheelEvent) => { event.preventDefault(); world.distance = Math.max(2.6, Math.min(4.8, world.distance * (1 + event.deltaY * 0.0008))); updateCamera(); };
       renderer.domElement.addEventListener('pointerdown', down);
       renderer.domElement.addEventListener('pointermove', move);
       renderer.domElement.addEventListener('pointerup', up);
@@ -185,7 +198,7 @@ export function SkyDome({ analysis, index }: { analysis: SiteAnalysis; index: nu
     addBody('earth', current.earthUp, current.earthAlt, current.earthAz);
   }, [current, ready]);
 
-  const reset = () => { const world = worldRef.current; if (!world) return; world.theta = 0.12; world.phi = 1.12; world.distance = 2.7; world.camera.position.set(world.distance * Math.sin(world.phi) * Math.sin(world.theta), 1.65 + world.distance * Math.cos(world.phi), world.distance * Math.sin(world.phi) * Math.cos(world.theta)); world.camera.lookAt(0, 1.65, 0); };
+  const reset = () => { const world = worldRef.current; if (!world) return; world.theta = 0.12; world.phi = 1.32; world.distance = 3.2; world.camera.position.set(world.distance * Math.sin(world.phi) * Math.sin(world.theta), 2.35 + world.distance * Math.cos(world.phi), world.distance * Math.sin(world.phi) * Math.cos(world.theta)); world.camera.lookAt(0, 2.35, 0); };
   return <section className="sky-dome-3d overflow-hidden rounded-2xl border border-white/10" aria-label={`Three dimensional sky model for ${analysis.site.name}`}>
     <div className="relative h-[250px] w-full sm:h-[300px]">
       <div ref={hostRef} className="size-full" />
