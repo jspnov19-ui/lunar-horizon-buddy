@@ -19,5 +19,5 @@ export function TermHelp({ term }: { term: string }) {
   const [open, setOpen] = useState(false);
   const explanation = TERMS[term];
   if (!explanation) return <>{term}</>;
-  return <span className="inline-flex items-center gap-1">{term}<TooltipProvider><Tooltip open={open} onOpenChange={setOpen}><TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-6 shrink-0" aria-label={`Explain ${term}`} onClick={() => setOpen(v => !v)}><CircleHelp className="size-3.5" /></Button></TooltipTrigger><TooltipContent className="max-w-[260px] whitespace-normal text-left leading-relaxed">{explanation}</TooltipContent></Tooltip></TooltipProvider></span>;
+  return <span className="inline-flex items-center gap-1">{term}<TooltipProvider><Tooltip open={open} onOpenChange={setOpen}><TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-6 shrink-0" aria-label={`Explain ${term}`} onClick={e => { e.preventDefault(); setOpen(true); }}><CircleHelp className="size-3.5" /></Button></TooltipTrigger><TooltipContent className="max-w-[260px] whitespace-normal text-left leading-relaxed">{explanation}</TooltipContent></Tooltip></TooltipProvider></span>;
 }
