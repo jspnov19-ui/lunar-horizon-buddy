@@ -6,9 +6,7 @@
  * Moon plus the optical-libration transform (Meeus ch. 53) to convert an
  * ecliptic direction into selenographic coordinates.
  *
- * Accuracy is on the order of a few arcminutes in direction, which is well
- * inside the uncertainty of terrain horizon profiles. Planning-grade, not
- * navigation-grade.
+3. In the file’s top comment, replace the “Accuracy is on the order of a few arcminutes…” sentence with: “Observer parallax is included. Accuracy is NOT yet validated here: use the in-app Compare with NASA Horizons panel to measure the actual error.” Your Methods page also claims “a few arcminutes”, so soften that wording too.
  */
 
 const DEG = Math.PI / 180;
@@ -138,23 +136,43 @@ export interface HorizonSample {
 const SUN_RADIUS_KM = 696000;
 const EARTH_RADIUS_KM = 6378.14;
 
+const MOON_RADIUS_KM = 1737.4;
+
+const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+
+/**
+ * Topocentric altitude/azimuth of a body for an observer standing on the lunar
+ * surface. The body is given as the selenographic sub-point of its direction
+ * from the Moon's centre plus its range (km). Using the real observer position
+ * (instead of the Moon's centre) adds parallax, which is ~0.26 deg for Earth,
+ * about the same size as the terrain horizons used here.
+ */
 function altAz(
   subLon: number,
   subLat: number,
+  rangeKm: number,
   siteLon: number,
   siteLat: number,
 ) {
-  const dLon = (subLon - siteLon) * DEG;
   const sl = siteLat * DEG;
+  const sn = siteLon * DEG;
+  const up: Vec3 = [Math.cos(sl) * Math.cos(sn), Math.cos(sl) * Math.sin(sn), Math.sin(sl)];
+  const north: Vec3 = [-Math.sin(sl) * Math.cos(sn), -Math.sin(sl) * Math.sin(sn), Math.cos(sl)];
+  const east: Vec3 = [-Math.sin(sn), Math.cos(sn), 0];
+
   const bl = subLat * DEG;
-  const sinAlt =
-    Math.sin(bl) * Math.sin(sl) + Math.cos(bl) * Math.cos(sl) * Math.cos(dLon);
-  const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt))) * RAD;
-  const az =
-    Math.atan2(
-      Math.sin(dLon) * Math.cos(bl),
-      Math.cos(sl) * Math.sin(bl) - Math.sin(sl) * Math.cos(bl) * Math.cos(dLon),
-    ) * RAD;
+  const bn = subLon * DEG;
+  const v: Vec3 = [
+    rangeKm * Math.cos(bl) * Math.cos(bn) - MOON_RADIUS_KM * up[0],
+    rangeKm * Math.cos(bl) * Math.sin(bn) - MOON_RADIUS_KM * up[1],
+    rangeKm * Math.sin(bl) - MOON_RADIUS_KM * up[2],
+  ];
+
+  const u = dot(v, up);
+  const n = dot(v, north);
+  const e = dot(v, east);
+  const alt = Math.atan2(u, Math.hypot(n, e)) * RAD;
+  const az = Math.atan2(e, n) * RAD;
   return { alt, az: (az + 360) % 360 };
 }
 
@@ -177,8 +195,8 @@ export function computeHorizon(
   const subSun = selenographic(s.lambda, s.beta, moon.F, moon.omega);
   const subEarth = selenographic(e.lambda, e.beta, moon.F, moon.omega);
 
-  const sunAA = altAz(subSun.lon, subSun.lat, siteLon, siteLat);
-  const earthAA = altAz(subEarth.lon, subEarth.lat, siteLon, siteLat);
+  const sunAA = altAz(subSun.lon, subSun.lat, s.r, siteLon, siteLat);
+  const earthAA = altAz(subEarth.lon, subEarth.lat, e.r, siteLon, siteLat);
 
   return {
     sunAlt: sunAA.alt,
