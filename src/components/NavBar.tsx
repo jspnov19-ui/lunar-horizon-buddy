@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { QuickStartTour } from '@/components/QuickStartTour';
 
 const MAIN = [{ to: '/', label: 'Overview' }, { to: '/planner', label: 'Planner' }, { to: '/data-lab', label: 'Data lab' }] as const;
-const LEARN = [{ to: '/how-it-works', label: 'How it works' }, { to: '/models', label: 'Models' }, { to: '/methods', label: 'Methods' }] as const;
+const LEARN = [{ to: '/how-it-works', label: 'How it works' }, { to: '/methods', label: 'Methods' }] as const;
 
 export function NavBar() {
   return <header className="site-nav sticky top-0 z-50 border-b border-hairline"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-8">
