@@ -8,6 +8,7 @@ import { SITES } from "@/lib/sites";
 import { LunarTools } from "@/components/LunarTools";
 import { MissionSummary } from "@/components/MissionSummary";
 import { TermHelp } from "@/components/TermHelp";
+import { InteractiveMoon } from "@/components/InteractiveMoon";
 import { rankSites } from "@/lib/planning";
 import {
   formatDate,
@@ -108,6 +109,9 @@ function ModelsPage() {
         analysis={primary}
         alternatives={rankSites(compare ? [primary, compare] : [primary], "balanced")}
       />
+      <div className="my-5">
+        <InteractiveMoon />
+      </div>
       <div className="glass-panel relative flex flex-col overflow-hidden rounded-xl shadow-[var(--shadow-panel)]">
         {/* Control strip */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border bg-background/60 px-4 py-3 font-mono text-[11px]">
