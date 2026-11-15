@@ -29,17 +29,17 @@ function LandingPage() {
         <div className="max-w-3xl">
           <p className="label-caps inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-3 py-2 text-white/85 backdrop-blur"><span className="size-1.5 rounded-full bg-sun shadow-[0_0_12px_var(--sun)]" />Lunar south pole <span className="text-white/40">/</span> Mission design</p>
           <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.05] tracking-tight text-white md:text-7xl">Choose a place<br />in the <span className="landing-title-glow">lunar light.</span></h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-white/75 md:text-lg">A mission planning experience for the Moon’s most challenging frontier. Explore candidate sites, follow the sunlight, and see when Earth stays in view.</p>
+          <p className="mt-6 max-w-xl text-base leading-7 text-white/75 md:text-lg">Compare eight study locations near the lunar south pole. Explore their NASA LOLA terrain previews, then estimate when the Sun and Earth clear each site’s assumed horizon during your selected mission dates.</p>
           <div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg" className="h-12 rounded-full px-6"><Link to="/planner">Explore the planner <ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="h-12 rounded-full border-white/25 bg-black/20 px-6 text-white hover:bg-white/10 hover:text-white"><Link to="/how-it-works">How it works</Link></Button></div>
-          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/65"><span>{SITES.length} candidate regions</span><span>Custom site plotting</span><span>Mission window comparison</span></div>
+          <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/65"><span>{SITES.length} built-in study locations</span><span>Custom coordinate plotting</span><span>Mission-window comparison</span></div>
         </div>
         <aside className="mission-glance hidden rounded-2xl border border-white/15 p-5 text-white backdrop-blur-xl md:block">
           <p className="label-caps text-white/55">Mission signals</p>
           <h2 className="mt-2 text-lg font-semibold">Plan around what matters.</h2>
           <div className="mt-5 space-y-4">
-            <Signal icon={<Sun className="size-4" />} tone="sun" title="Surface illumination" text="Track sunlight and long-shadow exposure." />
-            <Signal icon={<Globe2 className="size-4" />} tone="earth" title="Earth in view" text="Find direct visibility windows from the surface." />
-            <Signal icon={<Radio className="size-4" />} tone="neutral" title="Mission timing" text="Compare dates, durations, and site rankings." />
+            <Signal icon={<Sun className="size-4" />} tone="sun" title="Sun visibility" text="Estimate when the Sun clears the selected horizon mask." />
+            <Signal icon={<Globe2 className="size-4" />} tone="earth" title="Earth visibility" text="Estimate geometric line of sight from each surface site." />
+            <Signal icon={<Radio className="size-4" />} tone="neutral" title="Mission windows" text="Compare sampled visibility across dates and durations." />
           </div>
           <div className="mt-5 border-t border-white/10 pt-4 font-mono text-[10px] text-white/45">PRELIMINARY SCREENING <span className="float-right">SOUTH POLE</span></div>
         </aside>
@@ -48,21 +48,21 @@ function LandingPage() {
     </section>
 
     <section id="workspace" className="landing-content mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-20">
-      <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="label-caps text-primary">A clearer view of the decision</p><h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight md:text-4xl">One mission. Many possible Moons.</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Turn locations and landing dates into an operational picture you can inspect, compare, and explain.</p></div><Button asChild variant="link" className="group"><Link to="/planner">Enter mission planner <ArrowRight className="transition-transform group-hover:translate-x-1" /></Link></Button></div>
+      <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="label-caps text-primary">Compare locations and dates</p><h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-tight md:text-4xl">Eight south-polar study sites</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Inspect candidate coordinates, compare estimated Sun and Earth visibility over mission windows, and review the assumptions behind each result.</p></div><Button asChild variant="link" className="group"><Link to="/planner">Enter mission planner <ArrowRight className="transition-transform group-hover:translate-x-1" /></Link></Button></div>
       <div className="mt-9 grid gap-4 md:grid-cols-3">
-        <FeatureCard number="01" icon={<Globe2 className="size-5" />} title="Explore the lunar surface" text="Rotate the NASA-derived Moon model, inspect existing landing candidates, or plot your own coordinates." />
-        <FeatureCard number="02" icon={<Sun className="size-5" />} title="Shape the mission" text="Set a landing date, mission duration, and whether power, Earth visibility, or a balance matters most." />
-        <FeatureCard number="03" icon={<Radio className="size-5" />} title="Read the windows" text="Compare sunlight and Earth-contact availability, inspect shadow and link gaps, and export the timeseries." />
+        <FeatureCard number="01" icon={<Globe2 className="size-5" />} title="Inspect sites" text="Rotate the lunar globe, select one of eight built-in study locations, or add custom coordinates. Built-in sites include NASA LOLA terrain previews." />
+        <FeatureCard number="02" icon={<Sun className="size-5" />} title="Set a mission window" text="Choose a start date, duration, and ranking priority: estimated sunlight, Earth visibility, or a weighted balance." />
+        <FeatureCard number="03" icon={<Radio className="size-5" />} title="Compare estimates" text="Review sampled visibility, longest dark and Earth-out-of-view intervals, and export the results for further analysis." />
       </div>
       <div className="mt-8 grid gap-4 lg:grid-cols-[1fr_auto]">
         <div className="landing-data-strip grid gap-4 rounded-2xl border border-white/10 p-5 sm:grid-cols-3">
-          <DataPoint label="Candidate sites" value={`${SITES.length} regions`} detail="South-polar study areas" />
-          <DataPoint label="Mission horizon" value="7–365 days" detail="From short sortie to seasonal study" />
-          <DataPoint label="Compare & export" value="CSV · JSON" detail="Summary and sampled timeseries" />
+          <DataPoint label="Built-in study sites" value={`${SITES.length} locations`} detail="Plus user-defined coordinates" />
+          <DataPoint label="Mission duration" value="7–365 days" detail="Available analysis-window options" />
+          <DataPoint label="Export formats" value="CSV · JSON" detail="Comparison summaries and sampled data" />
         </div>
         <Button asChild variant="outline" className="h-auto rounded-2xl px-5 py-4"><Link to="/models" className="flex flex-col items-start gap-1"><span className="font-semibold">Explore the models <ArrowRight className="ml-1 inline size-4" /></span><span className="text-xs font-normal text-muted-foreground">See data sources and assumptions</span></Link></Button>
       </div>
-      <p className="mt-7 max-w-4xl border-l-2 border-primary/40 pl-4 text-xs leading-relaxed text-muted-foreground">Preliminary screening, not flight design. Ephemeris is approximate and built-in terrain masks are illustrative. Sun visibility does not establish electrical output; Earth visibility does not establish a complete radio link.</p>
+      <p className="mt-7 max-w-4xl border-l-2 border-primary/40 pl-4 text-xs leading-relaxed text-muted-foreground">These are preliminary estimates, not flight-design results. Sun and Earth visibility calculations use an approximate ephemeris and illustrative horizon masks; the LOLA terrain previews are not currently used by those calculations. Visibility alone does not establish electrical output or a complete radio link.</p>
     </section>
   </main>;
 }
