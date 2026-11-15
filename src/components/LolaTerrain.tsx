@@ -28,9 +28,9 @@ export function LolaTerrain({ siteId, siteName }: { siteId: string; siteName: st
       renderer.domElement.className = 'block size-full touch-none cursor-grab active:cursor-grabbing';
       renderer.domElement.setAttribute('aria-label', `Interactive NASA LOLA elevation terrain for ${siteName}; drag to rotate and scroll to zoom.`);
       host.replaceChildren(renderer.domElement);
-      scene.add(new THREE.AmbientLight(0x9aa0aa, .26));
-      const light = new THREE.DirectionalLight(0xd8d3cb, 3.2); light.position.set(-7, 5, 8); scene.add(light);
-      const fill = new THREE.DirectionalLight(0x71819a, .35); fill.position.set(7, 3, -5); scene.add(fill);
+      scene.add(new THREE.AmbientLight(0x737b89, .12));
+      const light = new THREE.DirectionalLight(0xf0eee9, 4.1); light.position.set(-7, 3.5, 8); scene.add(light);
+      const fill = new THREE.DirectionalLight(0x8b96a8, .12); fill.position.set(7, 2, -5); scene.add(fill);
       const geometry = new THREE.PlaneGeometry(span, span, grid - 1, grid - 1);
       geometry.rotateX(-Math.PI / 2);
       const positions = geometry.attributes.position;
@@ -40,12 +40,14 @@ export function LolaTerrain({ siteId, siteName }: { siteId: string; siteName: st
       const colors = new Float32Array(positions.count * 3);
       for (let i = 0; i < positions.count; i++) {
         const t = Math.max(0, Math.min(1, (heights[i]! - min) / Math.max(1, max - min)));
-        const shade = .52 + t * .16;
-        const c = new THREE.Color().setRGB(shade, shade * .98, shade * .94);
+        const shade = .035 + t * .075;
+        const c = new THREE.Color().setRGB(shade, shade * .99, shade * .96);
         colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
       }
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.computeVertexNormals();
-      const surface = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, side: THREE.DoubleSide, flatShading: false })); scene.add(surface);
+      const surface = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, side: THREE.DoubleSide, flatShading: false }));
+      surface.material.color.setRGB(.58, .58, .58);
+      scene.add(surface);
       const sampleHeight = (x: number, y: number) => {
         const gx = Math.max(0, Math.min(grid - 1, Math.round((x / span + .5) * (grid - 1))));
         const gy = Math.max(0, Math.min(grid - 1, Math.round((.5 - y / span) * (grid - 1))));
@@ -54,7 +56,9 @@ export function LolaTerrain({ siteId, siteName }: { siteId: string; siteName: st
       const boundary: any[] = [];
       for (let i = 0; i <= 180; i++) { const a = i / 180 * Math.PI * 2, x = Math.cos(a) * 2.2, z = Math.sin(a) * 1.55; boundary.push(new THREE.Vector3(x, sampleHeight(x, z) + .025, z)); }
       const boundaryCurve = new THREE.CatmullRomCurve3(boundary);
-      const outline = new THREE.Mesh(new THREE.TubeGeometry(boundaryCurve, 240, .018, 6, false), new THREE.MeshBasicMaterial({ color: 0xf04470, transparent: true, opacity: .98 })); scene.add(outline);
+      const outlineGlow = new THREE.Mesh(new THREE.TubeGeometry(boundaryCurve, 240, .052, 7, false), new THREE.MeshBasicMaterial({ color: 0xff174f, transparent: true, opacity: .2, depthTest: false }));
+      const outline = new THREE.Mesh(new THREE.TubeGeometry(boundaryCurve, 240, .024, 8, false), new THREE.MeshBasicMaterial({ color: 0xff315f, transparent: true, opacity: 1, depthTest: false }));
+      scene.add(outlineGlow, outline);
       const marker = new THREE.Mesh(new THREE.SphereGeometry(.075, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffc968 })); marker.position.set(0, sampleHeight(0, 0) + .06, 0); scene.add(marker);
       const stars: number[] = []; for (let i = 0; i < 230; i++) { const a = i * 2.399, r = 14 + (i % 13); stars.push(Math.cos(a) * r, 5 + (i % 11) * .45, Math.sin(a) * r); }
       const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(stars, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xc8d9f3, size: .045, transparent: true, opacity: .7 })));
