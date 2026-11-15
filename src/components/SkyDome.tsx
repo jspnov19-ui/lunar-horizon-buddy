@@ -183,16 +183,15 @@ export function SkyDome({ analysis, index }: { analysis: SiteAnalysis; index: nu
     const { THREE, bodyGroup } = world;
     for (const child of [...bodyGroup.children]) { bodyGroup.remove(child); child.geometry?.dispose(); child.material?.dispose(); }
     const addBody = (body: 'sun' | 'earth', visible: boolean, altitude: number, azimuth: number) => {
-      if (!visible) return;
       const color = body === 'sun' ? 0xffc86d : 0x71c4ff;
       const position = skyVector(THREE, Math.max(0.15, altitude), azimuth, SKY_RADIUS * 0.965);
-      const glow = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.29 : 0.23, 20, 16), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.18 }));
+      const glow = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.29 : 0.23, 20, 16), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: visible ? 0.18 : 0.07, depthWrite: false }));
       glow.position.copy(position);
       bodyGroup.add(glow);
-      const marker = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.12 : 0.09, 20, 16), new THREE.MeshBasicMaterial({ color }));
+      const marker = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.12 : 0.09, 20, 16), new THREE.MeshBasicMaterial({ color, transparent: !visible, opacity: visible ? 1 : 0.48, depthWrite: false }));
       marker.position.copy(position);
       bodyGroup.add(marker);
-      if (body === 'sun') { const light = new THREE.PointLight(color, 0.85, 3); light.position.copy(position); bodyGroup.add(light); }
+      if (body === 'sun' && visible) { const light = new THREE.PointLight(color, 0.85, 3); light.position.copy(position); bodyGroup.add(light); }
     };
     addBody('sun', current.sunUp, current.sunAlt, current.sunAz);
     addBody('earth', current.earthUp, current.earthAlt, current.earthAz);
@@ -207,6 +206,7 @@ export function SkyDome({ analysis, index }: { analysis: SiteAnalysis; index: nu
       <div className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/10 bg-black/35 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider text-white/70 backdrop-blur">3D SKY DOME <span className="mx-1 text-white/30">·</span> {analysis.site.name}</div>
       <button type="button" aria-label="Reset sky dome view" onClick={reset} className="absolute right-3 top-3 grid size-8 place-items-center rounded-lg border border-white/10 bg-black/35 text-white/70 backdrop-blur hover:bg-white/10"><RotateCcw className="size-3.5" /></button>
       <div className="pointer-events-none absolute bottom-3 left-3 flex gap-3 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[9px] text-white/75 backdrop-blur"><span className="text-sun">Sun path</span><span className="text-earth">Earth path</span><span className="text-[#f2c06e]">Local horizon</span></div>
+      {current && !current.sunUp && <div className="pointer-events-none absolute right-3 bottom-12 rounded-full border border-sun/25 bg-black/60 px-3 py-1.5 font-mono text-[9px] text-sun/85 backdrop-blur">SUN BELOW HORIZON · POSITION RETAINED</div>}
     </div>
     {current && <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-white/10 bg-black/15 p-3 font-mono text-[10px] tabular-nums sm:grid-cols-4">
       <SkyReadout label="Sun altitude / azimuth" value={`${current.sunAlt.toFixed(1)}° / ${current.sunAz.toFixed(0)}°`} tone="sun" />

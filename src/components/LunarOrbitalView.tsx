@@ -184,10 +184,9 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
     };
     for (const body of ['sun', 'earth'] as const) {
       const visible = body === 'sun' ? current.sunUp : current.earthUp;
-      if (body === 'sun' && !visible) continue;
       const position = bodyPosition(body, current);
       const color = body === 'sun' ? 0xffc76a : 0x66baff;
-      const marker = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.12 : 0.1, 24, 18), new THREE.MeshBasicMaterial({ color, transparent: body === 'earth' && !visible, opacity: visible ? 1 : 0.68, depthTest: false }));
+      const marker = new THREE.Mesh(new THREE.SphereGeometry(body === 'sun' ? 0.12 : 0.1, 24, 18), new THREE.MeshBasicMaterial({ color, transparent: !visible, opacity: visible ? 1 : 0.58, depthTest: false, depthWrite: false }));
       marker.renderOrder = 5;
       marker.position.copy(position);
       bodyGroup.add(marker);
@@ -196,7 +195,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
         tether.computeLineDistances();
         bodyGroup.add(tether);
       }
-      if (body === 'sun') { const glow = new THREE.PointLight(color, 1.2, 3); glow.position.copy(position); bodyGroup.add(glow); }
+      if (body === 'sun' && visible) { const glow = new THREE.PointLight(color, 1.2, 3); glow.position.copy(position); bodyGroup.add(glow); }
     }
   }, [analysis.site.lat, analysis.site.lon, current, ready]);
 
@@ -209,6 +208,7 @@ export function LunarOrbitalView({ analysis, index, className = '' }: { analysis
     <button type="button" onClick={reset} aria-label="Reset three dimensional orbital view" className="absolute right-3 top-3 grid size-8 place-items-center rounded-lg border border-white/10 bg-black/40 text-white/75 backdrop-blur hover:bg-white/10"><RotateCcw className="size-3.5" /></button>
     <div className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-2"><span className="rounded-md border border-white/10 bg-black/45 px-2.5 py-1.5 font-mono text-[9px] text-sun">☀ SUN {current?.sunAlt.toFixed(1)}°</span><span className="rounded-md border border-white/10 bg-black/45 px-2.5 py-1.5 font-mono text-[9px] text-earth">● EARTH {current?.earthAlt.toFixed(1)}°</span><span className="rounded-md border border-white/10 bg-black/45 px-2.5 py-1.5 font-mono text-[9px] text-primary">◉ SITE</span></div>
     {!current?.earthUp && <div className="pointer-events-none absolute right-3 top-[58px] rounded-md border border-earth/25 bg-black/65 px-2.5 py-1.5 font-mono text-[9px] text-earth/80">EARTH BELOW HORIZON · BODY SHOWN IN ORBIT VIEW</div>}
+    {!current?.sunUp && <div className="pointer-events-none absolute right-3 top-[88px] rounded-md border border-sun/25 bg-black/65 px-2.5 py-1.5 font-mono text-[9px] text-sun/85">SUN BELOW HORIZON · BODY SHOWN IN ORBIT VIEW</div>}
     <div className="pointer-events-none absolute bottom-3 right-3 hidden gap-3 rounded-md border border-white/10 bg-black/45 px-3 py-2 text-[9px] text-white/65 sm:flex"><span className="text-sun">Sun path</span><span className="text-earth">Earth path</span><span className="text-primary">Observer site</span></div>
   </div>;
 }
