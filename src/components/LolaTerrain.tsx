@@ -29,13 +29,13 @@ export function LolaTerrain({ siteId, siteName, latitude, longitude, sample, cla
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.28;
       renderer.domElement.className = 'block size-full touch-none cursor-grab active:cursor-grabbing';
       renderer.domElement.setAttribute('aria-label', `Interactive NASA LOLA elevation terrain for ${siteName}; drag to rotate and scroll to zoom.`);
       host.replaceChildren(renderer.domElement);
-      scene.add(new THREE.AmbientLight(0x737b89, .18));
+      scene.add(new THREE.AmbientLight(0x9aa5b3, .38));
       const light = new THREE.DirectionalLight(0xffd69b, 2.6); light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.camera.left = -9; light.shadow.camera.right = 9; light.shadow.camera.top = 9; light.shadow.camera.bottom = -9; light.shadow.camera.near = .1; light.shadow.camera.far = 45; light.shadow.bias = -.0002; light.position.set(-7, 3.5, 8); light.target.position.set(0, 0, 0); scene.add(light, light.target);
-      const fill = new THREE.DirectionalLight(0x8b96a8, .12); fill.position.set(7, 2, -5); scene.add(fill);
+      const fill = new THREE.DirectionalLight(0xb8c3d0, .32); fill.position.set(7, 2, -5); scene.add(fill);
       const geometry = new THREE.PlaneGeometry(span, span, grid - 1, grid - 1);
       geometry.rotateX(-Math.PI / 2);
       const positions = geometry.attributes.position;
@@ -45,13 +45,13 @@ export function LolaTerrain({ siteId, siteName, latitude, longitude, sample, cla
       const colors = new Float32Array(positions.count * 3);
       for (let i = 0; i < positions.count; i++) {
         const t = Math.max(0, Math.min(1, (heights[i]! - min) / Math.max(1, max - min)));
-        const shade = .035 + t * .075;
+        const shade = .12 + t * .14;
         const c = new THREE.Color().setRGB(shade, shade * .99, shade * .96);
         colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
       }
       geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3)); geometry.computeVertexNormals();
       const surface = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 0, side: THREE.DoubleSide, flatShading: false }));
-      surface.material.color.setRGB(.58, .58, .58);
+      surface.material.color.setRGB(.82, .82, .82);
       surface.castShadow = true; surface.receiveShadow = true;
       scene.add(surface);
       const sampleHeight = (x: number, y: number) => {
@@ -103,7 +103,7 @@ export function LolaTerrain({ siteId, siteName, latitude, longitude, sample, cla
     const sunAltitude = sample.sunAlt * Math.PI / 180;
     const sunDirection = new THREE.Vector3(Math.cos(sunAltitude) * Math.sin(lon + sunAngle), Math.sin(sunAltitude), Math.cos(sunAltitude) * Math.cos(lon + sunAngle));
     sunLight.position.copy(sunDirection.clone().multiplyScalar(18));
-    sunLight.intensity = sample.sunUp ? 3.0 : 0.45;
+    sunLight.intensity = sample.sunUp ? 3.4 : 0.9;
     sunLight.castShadow = sample.sunUp;
     const originY = sampleHeight(0, 0) + .12;
     for (const body of ['sun', 'earth'] as const) {
